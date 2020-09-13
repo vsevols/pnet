@@ -1,4 +1,5 @@
 import Exceptions.StormException;
+import org.telegram.api.TLConfig;
 import org.telegram.api.engine.storage.AbsApiState;
 import org.telegram.mtproto.state.AbsMTProtoState;
 import org.telegram.mtproto.state.ConnectionInfo;
@@ -27,6 +28,13 @@ public class ApiState implements AbsApiState {
 
     @Override
     public void setAuthenticated(int dcId, boolean auth) {
+        //TODO: implement
+        StormException.UnsupportedOperation(this);
+
+    }
+
+    @Override
+    public void updateSettings(TLConfig config) {
         //TODO: implement
         StormException.UnsupportedOperation(this);
 
