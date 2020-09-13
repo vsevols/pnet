@@ -1,23 +1,20 @@
 import Exceptions.StormException;
+import lombok.Getter;
+import lombok.Setter;
 import org.telegram.api.TLConfig;
 import org.telegram.api.engine.storage.AbsApiState;
+import org.telegram.mtproto.pq.Authorizer;
+import org.telegram.mtproto.pq.PqAuth;
 import org.telegram.mtproto.state.AbsMTProtoState;
 import org.telegram.mtproto.state.ConnectionInfo;
+import com.droidkit.actors.ActorCreator;
+
+import java.util.HashMap;
 
 public class ApiState implements AbsApiState {
-    @Override
-    public int getPrimaryDc() {
-        //TODO: implement
-        StormException.UnsupportedOperation(this);
-        return 0;
-    }
-
-    @Override
-    public void setPrimaryDc(int dc) {
-        //TODO: implement
-        StormException.UnsupportedOperation(this);
-
-    }
+    @Getter
+    @Setter
+    private int primaryDc;
 
     @Override
     public boolean isAuthenticated(int dcId) {
@@ -42,9 +39,18 @@ public class ApiState implements AbsApiState {
 
     @Override
     public byte[] getAuthKey(int dcId) {
-        //TODO: implement
-        StormException.UnsupportedOperation(this);
-        return new byte[0];
+        return generateKeys();
+    }
+
+    public byte[] generateKeys(){
+        Authorizer authorizer = new Authorizer();
+        HashMap<Integer, ConnectionInfo[]> connections = new HashMap<Integer, ConnectionInfo[]>();
+        connections.put(1, new ConnectionInfo[]{
+                new ConnectionInfo(1, 0, "149.154.167.40", 443) // Test
+                //new ConnectionInfo(1, 0, "173.240.5.1", 443) // Production
+        });
+        PqAuth pqAuth = authorizer.doAuth(connections.get(1));
+        return pqAuth.getAuthKey();
     }
 
     @Override
