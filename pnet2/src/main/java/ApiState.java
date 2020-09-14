@@ -8,6 +8,7 @@ import org.telegram.mtproto.pq.PqAuth;
 import org.telegram.mtproto.state.AbsMTProtoState;
 import org.telegram.mtproto.state.ConnectionInfo;
 import com.droidkit.actors.ActorCreator;
+import org.telegram.mtproto.state.KnownSalt;
 
 import java.util.HashMap;
 
@@ -16,10 +17,13 @@ public class ApiState implements AbsApiState {
     @Setter
     private int primaryDc;
 
+    private HashMap<Integer, Boolean> isAuth = new HashMap<Integer, Boolean>();
+
     @Override
     public boolean isAuthenticated(int dcId) {
-        //TODO: implement
-        StormException.UnsupportedOperation(this);
+        if (isAuth.containsKey(dcId)) {
+            return isAuth.get(dcId);
+        }
         return false;
     }
 
@@ -43,11 +47,11 @@ public class ApiState implements AbsApiState {
     }
 
     public byte[] generateKeys(){
+        boolean isTest = false;
         Authorizer authorizer = new Authorizer();
         HashMap<Integer, ConnectionInfo[]> connections = new HashMap<Integer, ConnectionInfo[]>();
         connections.put(1, new ConnectionInfo[]{
-                new ConnectionInfo(1, 0, "149.154.167.40", 443) // Test
-                //new ConnectionInfo(1, 0, "173.240.5.1", 443) // Production
+                new ConnectionInfo(1, 0, isTest ? "149.154.175.10" : "149.154.175.50", 443)
         });
         PqAuth pqAuth = authorizer.doAuth(connections.get(1));
         return pqAuth.getAuthKey();
@@ -62,16 +66,35 @@ public class ApiState implements AbsApiState {
 
     @Override
     public ConnectionInfo[] getAvailableConnections(int dcId) {
-        //TODO: implement
-        StormException.UnsupportedOperation(this);
         return new ConnectionInfo[0];
     }
 
     @Override
     public AbsMTProtoState getMtProtoState(int dcId) {
-        //TODO: implement
-        StormException.UnsupportedOperation(this);
-        return null;
+        return new AbsMTProtoState() {
+            private KnownSalt[] knownSalts = new KnownSalt[0];
+
+            @Override
+            public byte[] getAuthKey() {
+                return ApiState.this.getAuthKey(dcId);
+            }
+
+            @Override
+            public ConnectionInfo[] getAvailableConnections() {
+                return ApiState.this.getAvailableConnections(dcId);
+            }
+
+            @Override
+            public KnownSalt[] readKnownSalts() {
+                return knownSalts;
+            }
+
+            @Override
+            protected void writeKnownSalts(KnownSalt[] salts) {
+                knownSalts = salts;
+            }
+        };
+
     }
 
     @Override
