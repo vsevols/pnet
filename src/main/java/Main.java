@@ -1,7 +1,10 @@
-import it.tdlight.tdlight.Client;
-import it.tdlight.tdlight.Init;
-import it.tdlight.tdlight.Log;
+import com.pnet.ResultHandler;
+import it.tdlight.tdlib.TdApi;
+import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
+
+import java.io.DataInput;
+import java.io.ObjectInput;
 
 public class Main {
     public static void main(String[] args) throws CantLoadLibrary {
@@ -20,5 +23,16 @@ public class Main {
         client.initializeClient();
 
         // Now you can use the client
+        client.send(new Request(TdApi.SetTdlibParameters.CONSTRUCTOR,
+                new TdApi.SetTdlibParameters(new TdApi.TdlibParameters())));
+
+        new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    Response response = client.receive(0);
+                }
+            }
+        }
     }
 }
