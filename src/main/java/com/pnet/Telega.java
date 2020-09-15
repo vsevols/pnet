@@ -32,13 +32,19 @@ public class Telega {
         // Initialize TDLight native libraries
         Init.start();
 
-        // Set TDLib log level to 1
+        // Set TDLib log level
         Log.setVerbosityLevel(1);
 
         // Uncomment this line to print TDLib logs to a file
         // Log.setFilePath("logs" + File.separatorChar + "tdlib.log");
 
         client = TelegaClient.create();
+
+        //client.send(new TdApi.AddProxy(
+        //        "iplc-hk1.crhnode.top", 540, true,
+        //        new TdApi.ProxyTypeMtproto("ddf5c322081360e73b40db06ea6539f7f2")));
+            //client.send(new TdApi.GetTextEntities("@telegram /test_command https://telegram.org telegram.me @gif @test"));
+
 
         // Now you can use the client
         while (true) {
@@ -56,7 +62,7 @@ public class Telega {
     }
 
     private void processResponse(Response response) {
-        switch (Math.toIntExact(response.getId())){
+        switch (Math.toIntExact(response.getObject().getConstructor())){
             case TdApi.UpdateAuthorizationState.CONSTRUCTOR:
                 onAuthorizationStateUpdated(((TdApi.UpdateAuthorizationState) response.getObject()).authorizationState);
                 break;
@@ -163,6 +169,15 @@ public class Telega {
         if (currentPrompt != null) {
             System.out.print(currentPrompt);
         }
+    }
+
+    private void sendMessage(long chatId, String message) {
+        // initialize reply markup just for testing
+        TdApi.InlineKeyboardButton[] row = {new TdApi.InlineKeyboardButton("https://telegram.org?1", new TdApi.InlineKeyboardButtonTypeUrl()), new TdApi.InlineKeyboardButton("https://telegram.org?2", new TdApi.InlineKeyboardButtonTypeUrl()), new TdApi.InlineKeyboardButton("https://telegram.org?3", new TdApi.InlineKeyboardButtonTypeUrl())};
+        TdApi.ReplyMarkup replyMarkup = new TdApi.ReplyMarkupInlineKeyboard(new TdApi.InlineKeyboardButton[][]{row, row, row});
+
+        TdApi.InputMessageContent content = new TdApi.InputMessageText(new TdApi.FormattedText(message, null), false, true);
+        client.send(new TdApi.SendMessage(chatId, 0, null, replyMarkup, content));
     }
 
     private class AuthorizationRequestHandler {
