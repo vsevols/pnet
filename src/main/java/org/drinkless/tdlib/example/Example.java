@@ -6,6 +6,7 @@
 //
 package org.drinkless.tdlib.example;
 
+import com.pnet.ResultHandler;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.Client;
 
@@ -31,7 +32,7 @@ public final class Example {
     private static volatile boolean haveAuthorization = false;
     private static volatile boolean quiting = false;
 
-    private static final Client.ResultHandler defaultHandler = new DefaultHandler();
+    private static final ResultHandler defaultHandler = new DefaultHandler();
 
     private static final Lock authorizationLock = new ReentrantLock();
     private static final Condition gotAuthorization = authorizationLock.newCondition();
@@ -74,9 +75,11 @@ public final class Example {
     private static void setChatOrder(TdApi.Chat chat, long order) {
         synchronized (mainChatList) {
             synchronized (chat) {
+                /*
                 if (chat.chatList == null || chat.chatList.getConstructor() != TdApi.ChatListMain.CONSTRUCTOR) {
                     return;
                 }
+                 */
 
                 if (chat.order != 0) {
                     boolean isRemoved = mainChatList.remove(new OrderedChat(chat.order, chat.id));
@@ -568,7 +571,7 @@ public final class Example {
         }
     }
 
-    private static class AuthorizationRequestHandler implements Client.ResultHandler {
+    private static class AuthorizationRequestHandler implements ResultHandler {
         @Override
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
