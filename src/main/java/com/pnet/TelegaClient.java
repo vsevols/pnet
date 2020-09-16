@@ -33,7 +33,8 @@ public class TelegaClient extends Client {
         do {
             response = receive(syncPeriod);
             if(null==response)
-                throw new TimeoutException(function.toString());
+                continue;
+              //  throw new TimeoutException(function.toString());
             if (!resultHandler.onResult(response.getObject()))
                 this.resultHandler.onResult(response.getObject());
             else return;
