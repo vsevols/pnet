@@ -26,3 +26,4 @@ hs_err_pid*
 
 tdlib/td.binlog
 tdlib/db.sqlite*
+src/main/java/com/pnet/secure/*.java
