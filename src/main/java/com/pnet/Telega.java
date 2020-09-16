@@ -93,8 +93,6 @@ public class Telega {
         TdApi.Contact[] contacts = new TdApi.Contact[]{
                 new TdApi.Contact(phone, "", "", null, 0)
         };
-        double prevPeriod = client.setSyncPeriod(100000);
-        try {
             client.send(new TdApi.ImportContacts(contacts), new ResultHandler() {
                 @Override
                 public boolean onResult(TdApi.Object object) {
@@ -110,9 +108,6 @@ public class Telega {
                 }
             });
             return result[0];
-        }finally {
-            client.setSyncPeriod(prevPeriod);
-        }
 
         /*
         TdApi.ChatListMain chatListMain = new TdApi.ChatListMain();
