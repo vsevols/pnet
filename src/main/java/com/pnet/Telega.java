@@ -9,6 +9,8 @@ import it.tdlight.tdlight.utils.CantLoadLibrary;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
@@ -26,6 +28,7 @@ import static java.lang.Thread.sleep;
  *
  */
 public class Telega {
+    public OnMessageHandler onMessage;
     private TelegaClient client;
     private TdApi.AuthorizationState authorizationState = null;
     private boolean haveAuthorization;
@@ -321,6 +324,9 @@ public class Telega {
                 long[] chatIds = ((TdApi.Chats) object).chatIds;
                 print(object.toString());
                 break;
+            case TdApi.Message.CONSTRUCTOR:
+                onMessage.onMessage(new Message((TdApi.Message) object));
+                break;
             case TdApi.Error.CONSTRUCTOR:
                 print("TdApi error: "+((TdApi.Error)object).message);
                 break;
@@ -452,6 +458,12 @@ public class Telega {
         int id = userIdByPhone(phone);
         createChat(id);
         sendMessage(id, message);
+    }
+
+    public void process(long millis) {
+        LocalDateTime till = LocalDateTime.now().plusNanos(millis * 1000);
+        while(till.isAfter(LocalDateTime.now()))
+            client.processUpdates();
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{
