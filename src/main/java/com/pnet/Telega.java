@@ -17,6 +17,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.lang.Thread.sleep;
 
 
 /**TODO: onMessage в конструтор, вызывать processUpdates() из main
@@ -70,11 +71,36 @@ public class Telega {
         while (true) {
             process();
             if(haveAuthorization)
+                if(!hasImportedContacts)
                 tmpTest();
+                        else if(!hasCreatedChat)
+                            tmpTest2();
+                                    else tmpTest3();
         }
     }
 
+    private boolean hasSent=false;
+    private void tmpTest3() {
+        if(hasSent)
+            return;
+        sendMessage(Config.TEST_USER_ID, "asdfgh");
+        hasSent=true;
+    }
+
+    private boolean hasImportedContacts=false;
+
+    private boolean hasCreatedChat =false;
+    private void tmpTest2() {
+        if(!hasCreatedChat) {
+            client.send(new TdApi.CreatePrivateChat(Config.TEST_USER_ID, false));
+//            sendMessage(Config.TEST_USER_ID, "asdfgh");
+        }
+        hasCreatedChat =true;
+    }
+
     private void tmpTest() {
+        if(hasImportedContacts)
+            return;
         TdApi.Contact[] contacts = new TdApi.Contact[]{
                 new TdApi.Contact(
                 Config.TEST_PHONE, "", "", null, 0)
@@ -82,6 +108,11 @@ public class Telega {
         client.send(new TdApi.ImportContacts(contacts));
         TdApi.ChatListMain chatListMain = new TdApi.ChatListMain();
         client.send(new TdApi.GetChats(chatListMain, 0, 0, Integer.MAX_VALUE));
+        try {
+            sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void process() {
@@ -245,6 +276,8 @@ public class Telega {
             case TdApi.UpdateChatNotificationSettings.CONSTRUCTOR: {
                 TdApi.UpdateChatNotificationSettings update = (TdApi.UpdateChatNotificationSettings) object;
                 TdApi.Chat chat = chats.get(update.chatId);
+                if(null==chat)
+                    return;
                 synchronized (chat) {
                     chat.notificationSettings = update.notificationSettings;
                 }
@@ -297,6 +330,10 @@ public class Telega {
                 break;
             case TdApi.Error.CONSTRUCTOR:
                 print("TdApi error: "+((TdApi.Error)object).message);
+                break;
+            case TdApi.ImportedContacts.CONSTRUCTOR:
+                hasImportedContacts=true;
+                print(object.toString());
                 break;
             default:
                 print("unhandled response: "+object.toString());
