@@ -10,9 +10,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -48,7 +50,7 @@ public class Telega {
     private volatile boolean quiting = false;
     private static final String newLine = System.getProperty("line.separator");
 
-    public void run() throws CantLoadLibrary {
+    public void init() throws CantLoadLibrary {
 
         // Initialize TDLight native libraries
         Init.start();
@@ -59,24 +61,14 @@ public class Telega {
         // Uncomment this line to print TDLib logs to a file
         // Log.setFilePath("logs" + File.separatorChar + "tdlib.log");
 
-        client = TelegaClient.create();
-
-        //client.send(new TdApi.AddProxy(
-        //        "iplc-hk1.crhnode.top", 540, true,
-        //        new TdApi.ProxyTypeMtproto("ddf5c322081360e73b40db06ea6539f7f2")));
-            //client.send(new TdApi.GetTextEntities("@telegram /test_command https://telegram.org telegram.me @gif @test"));
-
+        client = TelegaClient.create(object -> Telega.this.processResponse(object));
 
         // Now you can use the client
-        while (true) {
-            process();
-            if(haveAuthorization)
-                if(!hasImportedContacts)
-                tmpTest();
-                        else if(!hasCreatedChat)
-                            tmpTest2();
-                                    else tmpTest3();
+
+        while (!haveAuthorization) {
+            client.processUpdates();
         }
+
     }
 
     private boolean hasSent=false;
@@ -87,25 +79,42 @@ public class Telega {
         hasSent=true;
     }
 
-    private boolean hasImportedContacts=false;
-
     private boolean hasCreatedChat =false;
     private void tmpTest2() {
         if(!hasCreatedChat) {
             client.send(new TdApi.CreatePrivateChat(Config.TEST_USER_ID, false));
-//            sendMessage(Config.TEST_USER_ID, "asdfgh");
         }
         hasCreatedChat =true;
     }
 
-    private void tmpTest() {
-        if(hasImportedContacts)
-            return;
+    private int userIdByPhone(String phone) throws TimeoutException {
+
+        final int[] result = new int[1];
         TdApi.Contact[] contacts = new TdApi.Contact[]{
-                new TdApi.Contact(
-                Config.TEST_PHONE, "", "", null, 0)
+                new TdApi.Contact(phone, "", "", null, 0)
         };
-        client.send(new TdApi.ImportContacts(contacts));
+        double prevPeriod = client.setSyncPeriod(100000);
+        try {
+            client.send(new TdApi.ImportContacts(contacts), new ResultHandler() {
+                @Override
+                public boolean onResult(TdApi.Object object) {
+                    switch (object.getConstructor()) {
+                        case TdApi.ImportedContacts.CONSTRUCTOR:
+                            TdApi.ImportedContacts contacts1 = (TdApi.ImportedContacts) object;
+                            if (1 != contacts1.userIds.length)
+                                throw new NoSuchElementException(phone);
+                            result[0] = contacts1.userIds[0];
+                            return true;
+                    }
+                    return false;
+                }
+            });
+            return result[0];
+        }finally {
+            client.setSyncPeriod(prevPeriod);
+        }
+
+        /*
         TdApi.ChatListMain chatListMain = new TdApi.ChatListMain();
         client.send(new TdApi.GetChats(chatListMain, 0, 0, Integer.MAX_VALUE));
         try {
@@ -113,22 +122,17 @@ public class Telega {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+         */
     }
 
-    private void process() {
-        Response response =null;
-        do {
-            response = client.receive(0);
-            if(null!=response)
-                this.processResponse(response);
-        }while(null!=response);
-    }
-
-    private void processResponse(Response response) {
-        TdApi.Object object = response.getObject();
-        switch (Math.toIntExact(response.getObject().getConstructor())){
+    private boolean processResponse(TdApi.Object object) {
+        switch (object.getConstructor()){
             case TdApi.UpdateAuthorizationState.CONSTRUCTOR:
-                onAuthorizationStateUpdated(((TdApi.UpdateAuthorizationState) response.getObject()).authorizationState);
+                try {
+                    onAuthorizationStateUpdated(((TdApi.UpdateAuthorizationState) object).authorizationState);
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                }
                 break;
             case TdApi.UpdateUser.CONSTRUCTOR:
                 TdApi.UpdateUser updateUser = (TdApi.UpdateUser) object;
@@ -277,7 +281,7 @@ public class Telega {
                 TdApi.UpdateChatNotificationSettings update = (TdApi.UpdateChatNotificationSettings) object;
                 TdApi.Chat chat = chats.get(update.chatId);
                 if(null==chat)
-                    return;
+                    return false;
                 synchronized (chat) {
                     chat.notificationSettings = update.notificationSettings;
                 }
@@ -331,21 +335,25 @@ public class Telega {
             case TdApi.Error.CONSTRUCTOR:
                 print("TdApi error: "+((TdApi.Error)object).message);
                 break;
-            case TdApi.ImportedContacts.CONSTRUCTOR:
-                hasImportedContacts=true;
-                print(object.toString());
-                break;
             default:
                 print("unhandled response: "+object.toString());
+                return false;
         }
+        return true;
     }
 
-    private void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState){
+    private void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState) throws TimeoutException {
         if (authorizationState != null) {
             this.authorizationState = authorizationState;
         }
         switch (authorizationState.getConstructor()){
             case TdApi.AuthorizationStateWaitTdlibParameters.CONSTRUCTOR:{
+                //client.send(new TdApi.AddProxy(
+                //        "iplc-hk1.crhnode.top", 540, true,
+                //        new TdApi.ProxyTypeMtproto("ddf5c322081360e73b40db06ea6539f7f2")));
+                //client.send(new TdApi.GetTextEntities("@telegram /test_command https://telegram.org telegram.me @gif @test"));
+
+
                 TdApi.TdlibParameters parameters = new TdApi.TdlibParameters();
                 parameters.databaseDirectory = "tdlib";
                 parameters.useMessageDatabase = true;
@@ -409,7 +417,7 @@ public class Telega {
             case TdApi.AuthorizationStateClosed.CONSTRUCTOR:
                 print("Closed");
                 if (!quiting) {
-                    client = client.create(); // recreate client after previous has closed
+                    client = client.create(object -> Telega.this.processResponse(object)); // recreate client after previous has closed
                 }
                 break;
             default:
@@ -451,7 +459,15 @@ public class Telega {
         client.send(new TdApi.SendMessage(chatId, 0, null, replyMarkup, content));
     }
 
-    private class AuthorizationRequestHandler {
+    public void sendMessage(String testPhone, String message) throws TimeoutException {
+        int id = userIdByPhone(testPhone);
+    }
+
+    private class AuthorizationRequestHandler implements ResultHandler{
+        @Override
+        public boolean onResult(TdApi.Object object) {
+            return false;
+        }
     }
 
     private static class OrderedChat implements Comparable<OrderedChat> {
