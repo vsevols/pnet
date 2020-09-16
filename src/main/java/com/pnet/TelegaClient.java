@@ -17,7 +17,7 @@ public class TelegaClient extends Client {
         super.send(new Request(function.getConstructor(), function));
     }
 
-    public void send(TdApi.Function function, ResultHandler resultHandler) throws TimeoutException {
+    public void send(TdApi.Function function, ResultHandler resultHandler) {
         send(function);
         if(null==resultHandler)
             return;

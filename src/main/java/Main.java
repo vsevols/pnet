@@ -8,10 +8,6 @@ public class Main {
     public static void main(String[] args) throws CantLoadLibrary {
         Telega telega = new Telega();
         telega.init();
-        try {
-            telega.sendMessage(Config.TEST_PHONE, "test message");
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
+        telega.sendMessage(Config.TEST_PHONE, "test message");
     }
 }

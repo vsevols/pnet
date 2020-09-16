@@ -71,23 +71,17 @@ public class Telega {
 
     }
 
-    private boolean hasSent=false;
-    private void tmpTest3() {
-        if(hasSent)
-            return;
-        sendMessage(Config.TEST_USER_ID, "asdfgh");
-        hasSent=true;
+    private void createChat(int userId) {
+        client.send(new TdApi.CreatePrivateChat(userId, true), object->{
+            switch (object.getConstructor()) {
+                case TdApi.UpdateNewChat.CONSTRUCTOR:
+                    return true;
+            }
+            return false;
+        });
     }
 
-    private boolean hasCreatedChat =false;
-    private void tmpTest2() {
-        if(!hasCreatedChat) {
-            client.send(new TdApi.CreatePrivateChat(Config.TEST_USER_ID, false));
-        }
-        hasCreatedChat =true;
-    }
-
-    private int userIdByPhone(String phone) throws TimeoutException {
+    private int userIdByPhone(String phone){
 
         final int[] result = new int[1];
         TdApi.Contact[] contacts = new TdApi.Contact[]{
@@ -454,8 +448,10 @@ public class Telega {
         client.send(new TdApi.SendMessage(chatId, 0, null, replyMarkup, content));
     }
 
-    public void sendMessage(String testPhone, String message) throws TimeoutException {
-        int id = userIdByPhone(testPhone);
+    public void sendMessage(String phone, String message){
+        int id = userIdByPhone(phone);
+        createChat(id);
+        sendMessage(id, message);
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{
