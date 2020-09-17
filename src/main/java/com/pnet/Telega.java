@@ -1,6 +1,5 @@
 package com.pnet;
 
-import com.pnet.secure.Config;
 import com.pnet.telega.WrappedChat;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
@@ -10,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
@@ -445,7 +443,7 @@ public class Telega {
         }
     }
 
-    private void sendMessage(long chatId, String message) {
+    private void internalSendMessage(long chatId, String message) {
         // initialize reply markup just for testing
         TdApi.InlineKeyboardButton[] row = {new TdApi.InlineKeyboardButton("https://telegram.org?1", new TdApi.InlineKeyboardButtonTypeUrl()), new TdApi.InlineKeyboardButton("https://telegram.org?2", new TdApi.InlineKeyboardButtonTypeUrl()), new TdApi.InlineKeyboardButton("https://telegram.org?3", new TdApi.InlineKeyboardButtonTypeUrl())};
         TdApi.ReplyMarkup replyMarkup = new TdApi.ReplyMarkupInlineKeyboard(new TdApi.InlineKeyboardButton[][]{row, row, row});
@@ -456,8 +454,12 @@ public class Telega {
 
     public void sendMessage(String phone, String message){
         int id = userIdByPhone(phone);
-        createChat(id);
         sendMessage(id, message);
+    }
+
+    public void sendMessage(int userId, String message) {
+        createChat(userId);
+        internalSendMessage(userId, message);
     }
 
     public void process(long millis) {

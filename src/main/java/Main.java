@@ -1,13 +1,11 @@
-import com.pnet.Telega;
-import com.pnet.secure.Config;
+import com.pnet.Router;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
-
-import java.util.concurrent.TimeoutException;
 
 public class Main {
     public static void main(String[] args) throws CantLoadLibrary {
-        Telega telega = new Telega();
-        telega.init();
-        telega.sendMessage(Config.TEST_PHONE, "test message");
+        Router router = new Router();
+        router.Init();
+        router.run();
     }
+
 }
