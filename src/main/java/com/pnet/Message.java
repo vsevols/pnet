@@ -8,11 +8,11 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class Message {
-    public final PartyId phone;
+    public final PartyId partyId;
     public final String text;
     public final TdApi.Message nativeMessage;
     Message(TdApi.Message nativeMessage){
-        phone=null;
+        partyId = new PartyId("");
         TdApi.MessageText text = (TdApi.MessageText) nativeMessage.content;
         this.text=text.text.text;
         this.nativeMessage = nativeMessage;
