@@ -4,6 +4,8 @@ import com.pnet.secure.Config;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +16,7 @@ public class Router {
     private Telega telega;
     private ConcurrentHashMap<Integer, Victim> victims = new ConcurrentHashMap<>();
     private int copiesSent;
+    private LocalDateTime lastMessageMoment = LocalDateTime.now().minusDays(1);
 
     public void Init() throws CantLoadLibrary, IOException {
         load();
@@ -25,10 +28,16 @@ public class Router {
 
     public void run() {
         while(true){
-            telega.process(Long.MAX_VALUE);
-            //TODO: checkProcessStartingMessage
+            telega.process(200000);
+            checkProcessStartingMessage();
         }
 
+    }
+
+    private void checkProcessStartingMessage() {
+        if(LocalDateTime.now().minusMinutes(1).isBefore(lastMessageMoment))
+            return;
+        processMessage(new Message(new PartyId(""), "Здрасьте", 0));
     }
 
     private void onMessage(Message msg) {
@@ -36,6 +45,7 @@ public class Router {
     }
 
     private void processMessage(Message msg) {
+        //TODO: Добавлять новые входящие контакты
         for (Victim victim :
                 victims.values()) {
             if(victimProcess(victim, msg))
@@ -50,7 +60,7 @@ public class Router {
     }
 
     private void load() throws IOException {
-        if(!new File(getVictimsFilePath()).exists()) {
+        if(!new File(getVictimsFilePath()).isFile()) {
             if (!"initConfig".equals(promptString(
                     String.format("%s not exists. Type 'initConfig' to create new", getVictimsFilePath()))))
                 throw new FileNotFoundException(getVictimsFilePath());
@@ -122,6 +132,7 @@ public class Router {
     }
 
     private boolean isRecentLastSeen(Victim victim) {
+        LocalDateTime lastSeen=telega.getUserLastSeen(victim.id);
         return false;
     }
 

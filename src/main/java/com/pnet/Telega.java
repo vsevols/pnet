@@ -468,6 +468,26 @@ public class Telega {
             client.processUpdates();
     }
 
+    public LocalDateTime getUserLastSeen(int id) {
+        ResultHandler handler=addTemporaryHandler(TdApi.Chat, chat->{
+            if(chat.id==id) {
+                result = chat.lastSeen;
+                return true;
+            }
+            return false;
+        });
+        createChat(id);
+        waitHandlerDone(handler);
+        //Или: result.wait();
+        return result;
+
+        //Или изменить стратегию для асинхронности:
+        //При создании victim - сразу запрашивать всю инфу, а здесь - лишь проверять её готовность
+        //на данный момент: requestUserLastSeen + tryGetUserLastSeen
+        //Или: здесь запрос + процессинг до null с изменением счётчика апдейтов или таймаута
+        //Или: сохранять все апдейты в список: startUpdatesRecording/finishUpdatesRecording
+    }
+
     private class AuthorizationRequestHandler implements ResultHandler{
         @Override
         public boolean onResult(TdApi.Object object) {
