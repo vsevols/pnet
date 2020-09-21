@@ -219,6 +219,8 @@ public class Telega {
             case TdApi.UpdateChatReadInbox.CONSTRUCTOR: {
                 TdApi.UpdateChatReadInbox updateChat = (TdApi.UpdateChatReadInbox) object;
                 TdApi.Chat chat = chats.get(updateChat.chatId);
+                if(null==chat)
+                    break;
                 synchronized (chat) {
                     chat.lastReadInboxMessageId = updateChat.lastReadInboxMessageId;
                     chat.unreadCount = updateChat.unreadCount;
