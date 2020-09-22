@@ -53,7 +53,7 @@ public class TelegaTest {
     }
 
     @Test
-    void getSupergroupMembers() throws TdApiException {
+    void getSupergroupMembers() throws Exception {
         Assertions.assertNotEquals(0, telega.getSupergroupMembers("SoVulgarChat").size()>200);
     }
 }

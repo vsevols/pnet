@@ -6,9 +6,10 @@ import it.tdlight.tdlight.utils.CantLoadLibrary;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.time.chrono.ChronoLocalDateTime;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 public class Router {
 
@@ -36,7 +37,7 @@ public class Router {
     }
 
     private void checkProcessStartingMessage() {
-        if(LocalDateTime.now().minusMinutes(1).isBefore(lastMessageMoment))
+        if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
         processMessage(new Message(new PartyId(""), "Здрасьте", 0));
     }
@@ -46,18 +47,38 @@ public class Router {
     }
 
     private void processMessage(Message msg) {
-        //TODO: Добавлять новые входящие контакты !кроме контакта "Telegram"
+        //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
+        //UPD: Возможен спам. Лучше вручную
+        copiesSent=0;
         for (Victim victim :
                 victims.values()) {
             if(victimProcess(victim, msg))
                 return;
         }
-        Victim victim;
-        do{
-            victim=newVictim();
-            victims.put(victim.id, victim);
-            save();
-        }while(!victimProcess(victim, msg));
+        if(addMoreVictims())
+            processMessage(msg);
+    }
+
+    private boolean addMoreVictims(){
+        boolean wasAdded = false;
+        for (String superGroupName : Config.superGroupNames) {
+            List<Integer> members;
+            try {
+                members = telega.getSupergroupMembers(superGroupName);
+            } catch (Exception e) {
+                e.printStackTrace();
+                save();
+                return wasAdded;
+            }
+            for (Integer member : members) {
+                if(!victims.containsKey(member)) {
+                    victims.put(member, new Victim(member));
+                    wasAdded = true;
+                }
+            }
+        }
+        save();
+        return wasAdded;
     }
 
     private void load() throws IOException {
@@ -114,7 +135,11 @@ public class Router {
             return false;
 
         try {
-            telega.sendMessage(victim.id, msg.text);
+            copiesSent++;
+            Logger.getGlobal().severe(msg.toString());
+            if(copiesSent>9999)throw new TdApiException(null);
+            return true;//Заглушка
+            //telega.sendMessage(victim.id, msg.text);
         } catch (TdApiException e) {
             e.printStackTrace();
         }

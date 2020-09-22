@@ -576,12 +576,17 @@ public class Telega {
         return id[0];
     }
 
-    public List<Integer> getSupergroupMembers(String name) throws TdApiException {
+    public List<Integer> getSupergroupMembers(String name) throws Exception {
         int id = Math.toIntExact(searchPublicChat(name));
         ArrayList<Integer> result = new ArrayList<>();
         final int LIMIT=200;
         for (int offset = 0; true; offset+=LIMIT) {
-            List<Integer> result2=getSupergroupMembers(id, offset, LIMIT);
+            List<Integer> result2= null;
+            try {
+                result2 = getSupergroupMembers(id, offset, LIMIT);
+            } catch (TdApiException e) {
+                throw new Exception(e);
+            }
             result.addAll(result2);
             if(result2.size()<LIMIT)
                 return result;

@@ -18,5 +18,6 @@ public class Message {
         TdApi.MessageText text = (TdApi.MessageText) nativeMessage.content;
         this.text=text.text.text;
         senderUserId=nativeMessage.senderUserId;
+        throw new UnsupportedOperationException("Отсеять конференции");
     }
 }
