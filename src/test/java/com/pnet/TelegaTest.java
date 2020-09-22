@@ -51,4 +51,9 @@ public class TelegaTest {
     void searchPublicChat() {
         Assertions.assertNotEquals(0, telega.searchPublicChat("SoVulgarChat"));
     }
+
+    @Test
+    void getSupergroupMembers() throws TdApiException {
+        Assertions.assertNotEquals(0, telega.getSupergroupMembers("SoVulgarChat").size());
+    }
 }

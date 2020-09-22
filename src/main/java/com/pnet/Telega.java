@@ -1,23 +1,21 @@
 package com.pnet;
 
+import com.pnet.telega.ErrorProcess;
 import com.pnet.telega.TdApiException;
+import com.pnet.telega.TypedResultHandler;
 import com.pnet.telega.WrappedChat;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
 import java.io.BufferedReader;
-import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.NavigableSet;
-import java.util.NoSuchElementException;
-import java.util.TimeZone;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeoutException;
@@ -85,15 +83,11 @@ public class Telega {
                 case TdApi.UpdateNewChat.CONSTRUCTOR:
                     return true;
             }
-            errorProcess(object);
+            new ErrorProcess(object);
             return false;
         });
     }
 
-    private void errorProcess(TdApi.Object object) throws TdApiException {
-        if(TdApi.Error.CONSTRUCTOR==object.getConstructor())
-            throw new TdApiException((TdApi.Error) object);
-    }
 
     private int userIdByPhone(String phone) throws TdApiException {
 
@@ -377,7 +371,7 @@ public class Telega {
                 print("TdApi error: "+((TdApi.Error)object).message);
                 break;*/
             default:
-                errorProcess(object);
+                new ErrorProcess(object);
                 print("unhandled response: "+object.toString());
                 return false;
         }
@@ -567,7 +561,7 @@ public class Telega {
                             id[0] =((TdApi.Chat)object).id;
                             return true;
                     }
-                    errorProcess(object);
+                    new ErrorProcess(object);
                     return false;
                 }
             });
@@ -577,8 +571,31 @@ public class Telega {
         return id[0];
     }
 
-    public void getSupergroupMembers(int id){
-        //client.send(new TdApi.GetSupergroupMembers(id, null, offset, limit));
+    public List<Integer> getSupergroupMembers(String name) throws TdApiException {
+        int id = Math.toIntExact(searchPublicChat(name));
+        ArrayList<Integer> result = new ArrayList<>();
+        final int LIMIT=200;
+        for (int offset = 0; true; offset+=LIMIT) {
+            List<Integer> result2=getSupergroupMembers(id, offset, LIMIT);
+            result.addAll(result2);
+            if(result2.size()<LIMIT)
+                return result;
+        }
+    }
+
+    private List<Integer> getSupergroupMembers(int id, int offset, int limit) throws TdApiException {
+        ArrayList<Integer> result = new ArrayList<>();
+        client.send(new TdApi.GetSupergroupMembers(id, null, offset, limit),
+                new TypedResultHandler<TdApi.ChatMembers>(new TdApi.ChatMembers()) {
+                    @Override
+                    public void onTypedResult(TdApi.ChatMembers object) {
+                        for (TdApi.ChatMember member : object.members) {
+                            result.add(member.userId);
+                        }
+                    }
+                }
+        );
+        return result;
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{
