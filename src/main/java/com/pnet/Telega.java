@@ -558,7 +558,12 @@ public class Telega {
                 public boolean onResult(TdApi.Object object) throws TdApiException {
                     switch (object.getConstructor()){
                         case TdApi.Chat.CONSTRUCTOR:
-                            id[0] =((TdApi.Chat)object).id;
+                            TdApi.Chat chat=(TdApi.Chat)object;
+                            if(TdApi.ChatTypeSupergroup.CONSTRUCTOR==chat.type.getConstructor()){
+                                id[0]=((TdApi.ChatTypeSupergroup)chat.type).supergroupId;
+                                return true;
+                            }
+                            id[0] =chat.id;
                             return true;
                     }
                     new ErrorProcess(object);
