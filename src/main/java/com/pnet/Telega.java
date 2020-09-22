@@ -468,7 +468,7 @@ public class Telega {
     }
 
     private String promptString(String prompt) {
-        System.out.print(prompt);
+        System.out.println(prompt);
         currentPrompt = prompt;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String str = "";
