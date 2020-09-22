@@ -66,7 +66,8 @@ public class Router {
                 throw new FileNotFoundException(getVictimsFilePath());
             else return;
         }
-        victims=new ConfigService().ReadJsonFile(victims.getClass(), getVictimsFilePath());
+        Config config=new ConfigService().ReadJsonFile(Config.class, getVictimsFilePath());
+        victims=config.victims;
     }
 
     private String promptString(String prompt) {
@@ -82,8 +83,10 @@ public class Router {
     }
 
     private void save() {
+        Config config=new Config();
+        config.victims=victims;
         try {
-            new ConfigService().WriteJsonFile(getVictimsFilePath(), victims);
+            new ConfigService().WriteJsonFile(getVictimsFilePath(), config);
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
