@@ -33,8 +33,9 @@ public class TelegaTest {
     }
 
     @Test
-    public void getUserLastSeen() {
-        telega.getUserLastSeen(638746378);
+    public void getUserLastSeen() throws Exception {
+        Integer member = telega.getSupergroupMembers(Config.TEST_CHAT_NAME).get(0);
+        telega.getUserLastSeen(member, Config.TEST_CHAT_NAME);
     }
 
     @BeforeEach

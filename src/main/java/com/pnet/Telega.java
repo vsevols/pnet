@@ -270,6 +270,8 @@ public class Telega {
             case TdApi.UpdateChatReadOutbox.CONSTRUCTOR: {
                 TdApi.UpdateChatReadOutbox updateChat = (TdApi.UpdateChatReadOutbox) object;
                 TdApi.Chat chat = chats.get(updateChat.chatId);
+                if(null==chat)break;
+
                 synchronized (chat) {
                     chat.lastReadOutboxMessageId = updateChat.lastReadOutboxMessageId;
                 }
@@ -511,30 +513,9 @@ public class Telega {
             client.processUpdates();
     }
 
-    public LocalDateTime getUserLastSeen(int id) {
-
-        try {
-            importContactByUserId(id);
-        } catch (TdApiException e) {
-            e.printStackTrace();
-        }
-
-        //GetUserFull
-        client.send(new TdApi.GetUserFullInfo(id));
-        for (int i = 0; i < 1000; i++) {
-            try {
-                client.processUpdates(true);
-            } catch (TdApiException e) {
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            createChat(id);
-        } catch (TdApiException e) {
-            e.printStackTrace();
-            return LocalDateTime.of(LocalDate.MIN, LocalTime.MIN);
-        }
+    public LocalDateTime getUserLastSeen(int id, String superGroupName) throws Exception {
+        if(null==users.get(id))
+            getSupergroupMembers(superGroupName);
         while(null==users.get(id))
             process(SYNC_TIMEOUT_MILLIS);
 

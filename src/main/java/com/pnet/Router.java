@@ -165,8 +165,12 @@ public class Router {
     }
 
     private boolean isRecentLastSeen(Victim victim) {
+        throw new UnsupportedOperationException();
+        /*
         LocalDateTime lastSeen=telega.getUserLastSeen(victim.id);
         return lastSeen.isAfter(LocalDateTime.now().minusMinutes(10));
+
+         */
     }
 
     private boolean checkArchivate(Victim victim) {
