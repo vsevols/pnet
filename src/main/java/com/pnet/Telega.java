@@ -477,7 +477,7 @@ public class Telega {
             process(SYNC_TIMEOUT_MILLIS);
 
         //(?)users.get(id).status;
-        return null;
+        return LocalDateTime.of(LocalDate.MIN, LocalTime.MIN);
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{

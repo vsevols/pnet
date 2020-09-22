@@ -39,7 +39,7 @@ public class TelegaClient extends Client {
         return client;
     }
 
-    void processUpdates() {
+    private void processUpdates(boolean throwOnError) {
         Response response =null;
         do {
             response = receive(0);
