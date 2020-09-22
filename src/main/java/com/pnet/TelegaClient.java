@@ -1,5 +1,6 @@
 package com.pnet;
 
+import com.pnet.telega.TdApiException;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.Client;
 import it.tdlight.tdlight.Request;
@@ -17,7 +18,7 @@ public class TelegaClient extends Client {
         super.send(new Request(function.getConstructor(), function));
     }
 
-    public void send(TdApi.Function function, ResultHandler resultHandler) {
+    public void send(TdApi.Function function, ResultHandler resultHandler) throws TdApiException {
         send(function);
         if(null==resultHandler)
             return;
@@ -39,12 +40,17 @@ public class TelegaClient extends Client {
         return client;
     }
 
-    private void processUpdates(boolean throwOnError) {
+    void processUpdates() {
         Response response =null;
         do {
             response = receive(0);
-            if(null!=response)
-                resultHandler.onResult(response.getObject());
+            if(null!=response) {
+                try {
+                    resultHandler.onResult(response.getObject());
+                } catch (TdApiException e) {
+                    e.printStackTrace();
+                }
+            }
         }while(null!=response);
     }
 }

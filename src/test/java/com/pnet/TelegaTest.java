@@ -1,6 +1,7 @@
 package com.pnet;
 
 import com.pnet.secure.Config;
+import com.pnet.telega.TdApiException;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.Assert;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TelegaTest {
 
     @Test
-    public void TestSendMessageAndOnMessage() throws CantLoadLibrary {
+    public void TestSendMessageAndOnMessage() throws CantLoadLibrary, TdApiException {
         Telega telega = new Telega();
         telega.init();
         final String MESSAGE_TEXT =

@@ -1,6 +1,7 @@
 package com.pnet;
 
 import com.pnet.secure.Config;
+import com.pnet.telega.TdApiException;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
 import java.io.*;
@@ -112,8 +113,12 @@ public class Router {
         if(!isVictimSuitable(victim))
             return false;
 
-        telega.sendMessage(victim.id, msg.text);
-            
+        try {
+            telega.sendMessage(victim.id, msg.text);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
+
         if(copiesSent>=MAX_COPIES){
             copiesSent=0;
             return true;
@@ -136,7 +141,7 @@ public class Router {
 
     private boolean isRecentLastSeen(Victim victim) {
         LocalDateTime lastSeen=telega.getUserLastSeen(victim.id);
-        return false;
+        return lastSeen.isAfter(LocalDateTime.now().minusMinutes(10));
     }
 
     private boolean checkArchivate(Victim victim) {

@@ -1,5 +1,6 @@
 package com.pnet;
 
+import com.pnet.telega.TdApiException;
 import com.pnet.telega.WrappedChat;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
@@ -8,9 +9,13 @@ import it.tdlight.tdlight.utils.CantLoadLibrary;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -73,17 +78,23 @@ public class Telega {
 
     }
 
-    private void createChat(int userId) {
+    private void createChat(int userId) throws TdApiException {
         client.send(new TdApi.CreatePrivateChat(userId, true), object->{
             switch (object.getConstructor()) {
                 case TdApi.UpdateNewChat.CONSTRUCTOR:
                     return true;
             }
+            errorProcess(object);
             return false;
         });
     }
 
-    private int userIdByPhone(String phone){
+    private void errorProcess(TdApi.Object object) throws TdApiException {
+        if(TdApi.Error.CONSTRUCTOR==object.getConstructor())
+            throw new TdApiException((TdApi.Error) object);
+    }
+
+    private int userIdByPhone(String phone) throws TdApiException {
 
         final int[] result = new int[1];
         TdApi.Contact[] contacts = new TdApi.Contact[]{
@@ -116,7 +127,7 @@ public class Telega {
          */
     }
 
-    private boolean processResponse(TdApi.Object object) {
+    private boolean processResponse(TdApi.Object object) throws TdApiException {
         switch (object.getConstructor()){
             case TdApi.UpdateAuthorizationState.CONSTRUCTOR:
                 try {
@@ -327,18 +338,19 @@ public class Telega {
                 break;
             case TdApi.Message.CONSTRUCTOR:
                 onMessage.onMessage(new Message((TdApi.Message) object));
-                break;
+                break;/*
             case TdApi.Error.CONSTRUCTOR:
                 print("TdApi error: "+((TdApi.Error)object).message);
-                break;
+                break;*/
             default:
+                errorProcess(object);
                 print("unhandled response: "+object.toString());
                 return false;
         }
         return true;
     }
 
-    private void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState) throws TimeoutException {
+    private void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState) throws TimeoutException, TdApiException {
         if (authorizationState != null) {
             this.authorizationState = authorizationState;
         }
@@ -455,12 +467,12 @@ public class Telega {
         client.send(new TdApi.SendMessage(chatId, 0, null, replyMarkup, content));
     }
 
-    public void sendMessage(String phone, String message){
+    public void sendMessage(String phone, String message) throws TdApiException {
         int id = userIdByPhone(phone);
         sendMessage(id, message);
     }
 
-    public void sendMessage(int userId, String message) {
+    public void sendMessage(int userId, String message) throws TdApiException {
         createChat(userId);
         internalSendMessage(userId, message);
     }
@@ -472,11 +484,24 @@ public class Telega {
     }
 
     public LocalDateTime getUserLastSeen(int id) {
-        createChat(id);
+        try {
+            createChat(id);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+            return LocalDateTime.of(LocalDate.MIN, LocalTime.MIN);
+        }
         while(null==users.get(id))
             process(SYNC_TIMEOUT_MILLIS);
 
-        //(?)users.get(id).status;
+        switch (users.get(id).status.getConstructor()){
+            case TdApi.UserStatusOnline.CONSTRUCTOR:
+                return LocalDateTime.now();
+            case TdApi.UserStatusOffline.CONSTRUCTOR:
+                return LocalDateTime.ofInstant(Instant.ofEpochSecond(
+                        ((TdApi.UserStatusOffline)users.get(id).status).wasOnline),
+                        TimeZone.getDefault().toZoneId()
+                );
+        }
         return LocalDateTime.of(LocalDate.MIN, LocalTime.MIN);
     }
 
