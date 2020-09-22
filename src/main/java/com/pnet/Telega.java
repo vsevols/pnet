@@ -7,6 +7,7 @@ import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
 import java.io.BufferedReader;
+import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Instant;
@@ -555,15 +556,29 @@ public class Telega {
         return LocalDateTime.of(LocalDate.MIN, LocalTime.MIN);
     }
 
-    public void searchPublicChat(){
-        client.send(new TdApi.SearchPublicChat("SoVulgarChat"));
-        for (int i = 0; i < 1000; i++) {
-            try {
-                client.processUpdates(true);
-            } catch (TdApiException e) {
-                e.printStackTrace();
-            }
+    public long searchPublicChat(String name){
+        final long[] id = new long[1];
+        try {
+            client.send(new TdApi.SearchPublicChat(name), new ResultHandler() {
+                @Override
+                public boolean onResult(TdApi.Object object) throws TdApiException {
+                    switch (object.getConstructor()){
+                        case TdApi.Chat.CONSTRUCTOR:
+                            id[0] =((TdApi.Chat)object).id;
+                            return true;
+                    }
+                    errorProcess(object);
+                    return false;
+                }
+            });
+        } catch (TdApiException e) {
+            e.printStackTrace();
         }
+        return id[0];
+    }
+
+    public void getSupergroupMembers(int id){
+        //client.send(new TdApi.GetSupergroupMembers(id, null, offset, limit));
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{

@@ -2,13 +2,10 @@ package com.pnet;
 
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
-import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TelegaTest {
     Telega telega;
@@ -52,6 +49,6 @@ public class TelegaTest {
 
     @Test
     void searchPublicChat() {
-        telega.searchPublicChat();
+        Assertions.assertNotEquals(0, telega.searchPublicChat("SoVulgarChat"));
     }
 }
