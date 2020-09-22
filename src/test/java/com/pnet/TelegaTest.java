@@ -49,4 +49,9 @@ public class TelegaTest {
     @AfterEach
     void tearDown() {
     }
+
+    @Test
+    void searchPublicChat() {
+        telega.searchPublicChat();
+    }
 }

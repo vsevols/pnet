@@ -555,6 +555,17 @@ public class Telega {
         return LocalDateTime.of(LocalDate.MIN, LocalTime.MIN);
     }
 
+    public void searchPublicChat(){
+        client.send(new TdApi.SearchPublicChat("SoVulgarChat"));
+        for (int i = 0; i < 1000; i++) {
+            try {
+                client.processUpdates(true);
+            } catch (TdApiException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private class AuthorizationRequestHandler implements ResultHandler{
         @Override
         public boolean onResult(TdApi.Object object) {
