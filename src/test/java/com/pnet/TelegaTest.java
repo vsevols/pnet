@@ -4,17 +4,17 @@ import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TelegaTest {
+    Telega telega;
 
     @Test
     public void TestSendMessageAndOnMessage() throws CantLoadLibrary, TdApiException {
-        Telega telega = new Telega();
-        telega.init();
         final String MESSAGE_TEXT =
                 "TestSendMessageAndOnMessage() message text";
 
@@ -35,4 +35,18 @@ public class TelegaTest {
             telega.process(1000);
     }
 
+    @Test
+    public void getUserLastSeen() {
+        telega.getUserLastSeen(638746378);
+    }
+
+    @BeforeEach
+    public void setUp() throws CantLoadLibrary {
+        telega = new Telega();
+        telega.init();
+    }
+
+    @AfterEach
+    void tearDown() {
+    }
 }

@@ -127,6 +127,39 @@ public class Telega {
          */
     }
 
+    private int importContactByUserId(int userId) throws TdApiException {
+
+        final int[] result = new int[1];
+        TdApi.Contact[] contacts = new TdApi.Contact[]{
+                new TdApi.Contact(null, "", "", null, userId)
+        };
+        client.send(new TdApi.ImportContacts(contacts), new ResultHandler() {
+            @Override
+            public boolean onResult(TdApi.Object object) {
+                switch (object.getConstructor()) {
+                    case TdApi.ImportedContacts.CONSTRUCTOR:
+                        TdApi.ImportedContacts contacts1 = (TdApi.ImportedContacts) object;
+                        if (1 != contacts1.userIds.length)
+                            throw new NoSuchElementException(new Integer(userId).toString());
+                        result[0] = contacts1.userIds[0];
+                        return true;
+                }
+                return false;
+            }
+        });
+        return result[0];
+
+        /*
+        TdApi.ChatListMain chatListMain = new TdApi.ChatListMain();
+        client.send(new TdApi.GetChats(chatListMain, 0, 0, Integer.MAX_VALUE));
+        try {
+            sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+         */
+    }
+
     private boolean processResponse(TdApi.Object object) throws TdApiException {
         switch (object.getConstructor()){
             case TdApi.UpdateAuthorizationState.CONSTRUCTOR:
@@ -484,6 +517,23 @@ public class Telega {
     }
 
     public LocalDateTime getUserLastSeen(int id) {
+
+        try {
+            importContactByUserId(id);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
+
+        //GetUserFull
+        client.send(new TdApi.GetUserFullInfo(id));
+        for (int i = 0; i < 1000; i++) {
+            try {
+                client.processUpdates(true);
+            } catch (TdApiException e) {
+                e.printStackTrace();
+            }
+        }
+
         try {
             createChat(id);
         } catch (TdApiException e) {

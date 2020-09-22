@@ -40,7 +40,7 @@ public class TelegaClient extends Client {
         return client;
     }
 
-    void processUpdates() {
+    void processUpdates(boolean canThrow) throws TdApiException {
         Response response =null;
         do {
             response = receive(0);
@@ -48,9 +48,19 @@ public class TelegaClient extends Client {
                 try {
                     resultHandler.onResult(response.getObject());
                 } catch (TdApiException e) {
+                    if(canThrow)
+                        throw e;
                     e.printStackTrace();
                 }
             }
         }while(null!=response);
+    }
+
+    public void processUpdates() {
+        try {
+            processUpdates(true);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
     }
 }
