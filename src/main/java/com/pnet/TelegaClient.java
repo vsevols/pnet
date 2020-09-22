@@ -23,7 +23,7 @@ public class TelegaClient extends Client {
             return;
         Response response;
         do {
-            response = receive(SYNC_RECEIVE_PERIOD);
+            response = receive(0);
             if(null==response)
                 continue;
               //  throw new TimeoutException(function.toString());

@@ -26,6 +26,7 @@ import static java.lang.Thread.sleep;
  *
  */
 public class Telega {
+    private static final long SYNC_TIMEOUT_MILLIS = 1000;
     public OnMessageHandler onMessage;
     private TelegaClient client;
     private TdApi.AuthorizationState authorizationState = null;
@@ -471,23 +472,12 @@ public class Telega {
     }
 
     public LocalDateTime getUserLastSeen(int id) {
-        ResultHandler handler=addTemporaryHandler(TdApi.Chat, chat->{
-            if(chat.id==id) {
-                result = chat.lastSeen;
-                return true;
-            }
-            return false;
-        });
         createChat(id);
-        waitHandlerDone(handler);
-        //Или: result.wait();
-        return result;
+        while(null==users.get(id))
+            process(SYNC_TIMEOUT_MILLIS);
 
-        //Или изменить стратегию для асинхронности:
-        //При создании victim - сразу запрашивать всю инфу, а здесь - лишь проверять её готовность
-        //на данный момент: requestUserLastSeen + tryGetUserLastSeen
-        //Или: здесь запрос + процессинг до null с изменением счётчика апдейтов или таймаута
-        //Или: сохранять все апдейты в список: startUpdatesRecording/finishUpdatesRecording
+        //(?)users.get(id).status;
+        return null;
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{

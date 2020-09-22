@@ -11,8 +11,10 @@ import java.io.IOException;
 
 public class ConfigService {
     private void WriteFile(String path, String buf) throws IOException {
+        new File(new File(path).getParent()).mkdirs();
         FileWriter fileWriter = new FileWriter(path);
         fileWriter.write(buf);
+        fileWriter.close();
     }
 
     private String ReadFile(String path) throws IOException {

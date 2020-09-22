@@ -45,7 +45,7 @@ public class Router {
     }
 
     private void processMessage(Message msg) {
-        //TODO: Добавлять новые входящие контакты
+        //TODO: Добавлять новые входящие контакты !кроме контакта "Telegram"
         for (Victim victim :
                 victims.values()) {
             if(victimProcess(victim, msg))
@@ -55,8 +55,8 @@ public class Router {
         do{
             victim=newVictim();
             victims.put(victim.id, victim);
+            save();
         }while(!victimProcess(victim, msg));
-        save();
     }
 
     private void load() throws IOException {
