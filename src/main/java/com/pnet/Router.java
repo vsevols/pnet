@@ -1,6 +1,9 @@
 package com.pnet;
 
+import com.pnet.abstractions.Chat;
+import com.pnet.abstractions.Message;
 import com.pnet.secure.Config;
+import com.pnet.telega.MessageImpl;
 import com.pnet.telega.TdApiException;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
@@ -13,6 +16,7 @@ import java.util.logging.Logger;
 public class Router {
 
     private static final int MAX_COPIES = 3;
+    private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private Telega telega;
     private ConcurrentHashMap<Integer, Victim> victims = new ConcurrentHashMap<>();
     private int copiesSent;
@@ -37,7 +41,7 @@ public class Router {
     private void checkProcessStartingMessage() {
         if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
-        processMessage(new Message(new PartyId(""), "Здрасьте", 0));
+        processMessage(new MessageImpl(new PartyId(""), "Здрасьте", 0, 0));
     }
 
     private void onMessage(Message msg) {
@@ -47,6 +51,11 @@ public class Router {
     private void processMessage(Message msg) {
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
         //UPD: Возможен спам. Лучше вручную
+
+        //Отфильтруем конференции
+        if(msg.getSenderUserId()!=msg.chatId())
+            return;
+
         copiesSent=0;
         for (Victim victim :
                 victims.values()) {
@@ -116,7 +125,7 @@ public class Router {
         return Config.toDataPath("victims.json");
     }
 
-    private boolean victimProcess(Victim victim, Message msg) {
+    private boolean victimProcess(Victim victim, MessageImpl msg) {
         if(victim.id==msg.senderUserId)
             return false;
         if(checkArchivate(victim))
@@ -144,14 +153,24 @@ public class Router {
     private boolean isVictimSuitable(Victim victim) {
         if(!isRecentLastSeen(victim))
             return false;
-        if(isChatTailFloodedByMe(victim))
+        if(isMyMonolog(victim))
             return false;
 
         return true;
     }
 
-    private boolean isChatTailFloodedByMe(Victim victim) {
-        return true;
+    private boolean isMyMonolog(Victim victim) {
+        List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
+        int count=0;
+        for (Message message:
+             chatHistory) {
+            if(!message.getIsOutgoing())
+                return false;
+            if(MAX_MY_MONOLOG_MESSAGES<=count)
+                return true;
+            count++;
+        }
+        return false;
     }
 
     private boolean isRecentLastSeen(Victim victim) {

@@ -1,13 +1,12 @@
 package com.pnet;
 
 import com.pnet.telega.TdApiException;
+import com.pnet.telega.TypedResultHandler;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.Client;
 import it.tdlight.tdlight.Request;
 import it.tdlight.tdlight.Response;
 import lombok.RequiredArgsConstructor;
-
-import java.util.concurrent.TimeoutException;
 
 @RequiredArgsConstructor
 public class TelegaClient extends Client {
@@ -62,5 +61,17 @@ public class TelegaClient extends Client {
         } catch (TdApiException e) {
             e.printStackTrace();
         }
+    }
+
+    public <T extends TdApi.Object> T syncRequest(TdApi.Function request, T typeByObject) throws TdApiException {
+        final TdApi.Object[] result = new TdApi.Object[1];
+        send(request, new TypedResultHandler<T>(typeByObject) {
+            @Override
+            protected void onTypedResult(T object) {
+                result[0] = object;
+            }
+        });
+
+        return (T) result[0];
     }
 }

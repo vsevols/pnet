@@ -1,9 +1,8 @@
 package com.pnet;
 
-import com.pnet.telega.ErrorProcess;
-import com.pnet.telega.TdApiException;
-import com.pnet.telega.TypedResultHandler;
-import com.pnet.telega.WrappedChat;
+import com.pnet.abstractions.Chat;
+import com.pnet.abstractions.Message;
+import com.pnet.telega.*;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
@@ -77,7 +76,7 @@ public class Telega {
 
     }
 
-    private void createChat(int userId) throws TdApiException {
+    private void createPrivateChat(int userId) throws TdApiException {
         client.send(new TdApi.CreatePrivateChat(userId, true), object->{
             switch (object.getConstructor()) {
                 case TdApi.UpdateNewChat.CONSTRUCTOR:
@@ -89,7 +88,7 @@ public class Telega {
     }
 
 
-    private int userIdByPhone(String phone) throws TdApiException {
+    int userIdByPhone(String phone) throws TdApiException {
 
         final int[] result = new int[1];
         TdApi.Contact[] contacts = new TdApi.Contact[]{
@@ -367,7 +366,7 @@ public class Telega {
                 print(object.toString());
                 break;
             case TdApi.Message.CONSTRUCTOR:
-                onMessage.onMessage(new Message((TdApi.Message) object));
+                onMessage.onMessage(new MessageImpl((TdApi.Message) object));
                 break;/*
             case TdApi.Error.CONSTRUCTOR:
                 print("TdApi error: "+((TdApi.Error)object).message);
@@ -503,7 +502,7 @@ public class Telega {
     }
 
     public void sendMessage(int userId, String message) throws TdApiException {
-        createChat(userId);
+        createPrivateChat(userId);
         internalSendMessage(userId, message);
     }
 
@@ -588,6 +587,30 @@ public class Telega {
                 }
         );
         return result;
+    }
+
+    public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit) {
+        TdApi.Messages result;
+        try {
+            createPrivateChat(userId);
+            result = client.syncRequest(
+                    new TdApi.GetChatHistory(userId, fromMessageId, offset, limit, true), new TdApi.Messages());
+        } catch (TdApiException e) {
+            e.printStackTrace();
+            return new ArrayList<Message>();
+        }
+
+        return new ArrayList<Message>(){{
+            for (int i = 0; i < result.messages.length; i++) {
+                add(new MessageImpl(result.messages[i]));
+            }
+        }};
+    }
+
+    public Chat tryChatByUserId(int id) {
+        if(chats.containsKey(id))
+            return new ChatImpl(chats.get(id));
+        return null;
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{

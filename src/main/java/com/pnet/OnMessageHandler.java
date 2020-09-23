@@ -1,7 +1,7 @@
 package com.pnet;
 
-import it.tdlight.tdlib.TdApi;
+import com.pnet.telega.MessageImpl;
 
 public interface OnMessageHandler {
-    void onMessage(Message msg);
+    void onMessage(MessageImpl msg);
 }
