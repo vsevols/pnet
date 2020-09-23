@@ -8,12 +8,10 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class Router {
 
-    private static final int MAX_VICTIM_ID = 1266000000;
     private static final int MAX_COPIES = 3;
     private Telega telega;
     private ConcurrentHashMap<Integer, Victim> victims = new ConcurrentHashMap<>();
@@ -72,7 +70,7 @@ public class Router {
             }
             for (Integer member : members) {
                 if(!victims.containsKey(member)) {
-                    victims.put(member, new Victim(member));
+                    victims.put(member, new Victim(member, superGroupName));
                     wasAdded = true;
                 }
             }
@@ -118,14 +116,6 @@ public class Router {
         return Config.toDataPath("victims.json");
     }
 
-    private Victim newVictim() {
-        int id;
-        do {
-            id = (int) (Math.random() * MAX_VICTIM_ID);
-        }while(victims.containsKey(id));
-        return new Victim(id);
-    }
-
     private boolean victimProcess(Victim victim, Message msg) {
         if(victim.id==msg.senderUserId)
             return false;
@@ -154,7 +144,7 @@ public class Router {
     private boolean isVictimSuitable(Victim victim) {
         if(!isRecentLastSeen(victim))
             return false;
-        if(!isChatTailFloodedByMe(victim))
+        if(isChatTailFloodedByMe(victim))
             return false;
 
         return true;
@@ -165,15 +155,18 @@ public class Router {
     }
 
     private boolean isRecentLastSeen(Victim victim) {
-        throw new UnsupportedOperationException();
-        /*
-        LocalDateTime lastSeen=telega.getUserLastSeen(victim.id);
+        LocalDateTime lastSeen= null;
+        try {
+            lastSeen = telega.getUserLastSeen(victim.id, victim.groupName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
         return lastSeen.isAfter(LocalDateTime.now().minusMinutes(10));
-
-         */
     }
 
     private boolean checkArchivate(Victim victim) {
+        //TODO: здесь, возможно прийдётся подменять victims
         return false;
     }
 }

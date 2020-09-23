@@ -521,6 +521,7 @@ public class Telega {
 
         switch (users.get(id).status.getConstructor()){
             case TdApi.UserStatusOnline.CONSTRUCTOR:
+            case TdApi.UserStatusRecently.CONSTRUCTOR:
                 return LocalDateTime.now();
             case TdApi.UserStatusOffline.CONSTRUCTOR:
                 return LocalDateTime.ofInstant(Instant.ofEpochSecond(
