@@ -3,5 +3,11 @@ package com.pnet.abstractions;
 public interface Message {
     long getId();
 
-    boolean getIsOutgoing();
+    boolean isOutgoing();
+
+    int getSenderUserId();
+
+    long getChatId();
+
+    String getText();
 }

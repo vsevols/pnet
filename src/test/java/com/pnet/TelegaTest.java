@@ -22,13 +22,13 @@ public class TelegaTest {
 
         final boolean[] isPassed = new boolean[1];
 
-        telega.onMessage= new OnMessageHandler() {
+        telega.onMessage = new OnMessageHandler() {
             @Override
-            public void onMessage(MessageImpl msg) {
+            public void onMessage(Message msg) {
                 //TODO: request and check partyId (phone)
                 //telega.getPartyId(msg.senderUserId)
                 if(//msg.phone.value.equals(Config.ACCOUNT_PHONE)&&
-                        msg.text.equals(MESSAGE_TEXT))
+                        msg.getText().equals(MESSAGE_TEXT))
                     isPassed[0] =true;
             }
         };

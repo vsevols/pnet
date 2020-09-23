@@ -1,9 +1,8 @@
 package com.pnet;
 
-import com.pnet.abstractions.Chat;
 import com.pnet.abstractions.Message;
+import com.pnet.routing.MessageImpl;
 import com.pnet.secure.Config;
-import com.pnet.telega.MessageImpl;
 import com.pnet.telega.TdApiException;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
@@ -26,7 +25,7 @@ public class Router {
         load();
         telega = new Telega();
         telega.init();
-        telega.onMessage = this::onMessage;
+        telega.onMessage = msg -> onMessage(msg);
     }
 
 
@@ -41,7 +40,7 @@ public class Router {
     private void checkProcessStartingMessage() {
         if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
-        processMessage(new MessageImpl(new PartyId(""), "Здрасьте", 0, 0));
+        processMessage(new MessageImpl("Здрасьте"));
     }
 
     private void onMessage(Message msg) {
@@ -53,7 +52,7 @@ public class Router {
         //UPD: Возможен спам. Лучше вручную
 
         //Отфильтруем конференции
-        if(msg.getSenderUserId()!=msg.chatId())
+        if(msg.getSenderUserId()!=msg.getChatId())
             return;
 
         copiesSent=0;
@@ -125,8 +124,8 @@ public class Router {
         return Config.toDataPath("victims.json");
     }
 
-    private boolean victimProcess(Victim victim, MessageImpl msg) {
-        if(victim.id==msg.senderUserId)
+    private boolean victimProcess(Victim victim, Message msg) {
+        if(victim.id==msg.getSenderUserId())
             return false;
         if(checkArchivate(victim))
             return false;
@@ -164,7 +163,7 @@ public class Router {
         int count=0;
         for (Message message:
              chatHistory) {
-            if(!message.getIsOutgoing())
+            if(!message.isOutgoing())
                 return false;
             if(MAX_MY_MONOLOG_MESSAGES<=count)
                 return true;

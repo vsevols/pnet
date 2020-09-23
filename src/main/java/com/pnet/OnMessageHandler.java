@@ -1,7 +1,7 @@
 package com.pnet;
 
-import com.pnet.telega.MessageImpl;
+import com.pnet.abstractions.Message;
 
 public interface OnMessageHandler {
-    void onMessage(MessageImpl msg);
+    void onMessage(Message msg);
 }
