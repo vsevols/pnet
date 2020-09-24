@@ -104,37 +104,11 @@ public class Router {
     }
 
     private void load() throws IOException {
-        if(!new File(getDataFilePath()).isFile()) {
-            if (!"initConfig".equals(promptString(
-                    String.format("%s not exists. Type 'initConfig' to create new", getDataFilePath()))))
-                throw new FileNotFoundException(getDataFilePath());
-            else return;
-        }
-        config=new ConfigService().ReadJsonFile(Config.class, getDataFilePath());
-    }
-
-    private String promptString(String prompt) {
-        System.out.print(prompt+System.lineSeparator());
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String str = "";
-        try {
-            str = reader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return str;
+        config= ConfigService.loadConfig();
     }
 
     private void save() {
-        try {
-            new ConfigService().WriteJsonFile(getDataFilePath(), config);
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
-    }
-
-    private String getDataFilePath() {
-        return Config.toDataPath("data.json");
+        ConfigService.saveConfig(config);
     }
 
     private boolean victimProcess(Victim victim, Message msg) {
