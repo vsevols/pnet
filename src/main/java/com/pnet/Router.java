@@ -2,6 +2,7 @@ package com.pnet;
 
 import com.pnet.abstractions.Message;
 import com.pnet.routing.MessageImpl;
+import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
@@ -31,10 +32,20 @@ public class Router {
 
     public void run() {
         while(true){
-            telega.process(200000);
+            telega.process(20000);
+            /*
+            processIncomingMessages();
             checkProcessStartingMessage();
+
+             */
         }
 
+    }
+
+    private void processIncomingMessages() {
+        while(config.incomingMessages.size()>0){
+            processMessage(config.incomingMessages.get(0));
+        }
     }
 
     private void checkProcessStartingMessage() {
@@ -44,16 +55,17 @@ public class Router {
     }
 
     private void onMessage(Message msg) {
-        processMessage(msg);
+        //Отфильтруем конференции
+        if(msg.getSenderUserId()!=msg.getChatId())
+            return;
+
+        config.incomingMessages.add(new RoutingMessage(msg, false));
+        save();
     }
 
     private void processMessage(Message msg) {
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
         //UPD: Возможен спам. Лучше вручную
-
-        //Отфильтруем конференции
-        if(msg.getSenderUserId()!=msg.getChatId())
-            return;
 
         copiesSent=0;
         for (Victim victim :
