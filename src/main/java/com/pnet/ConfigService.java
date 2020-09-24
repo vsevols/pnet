@@ -63,13 +63,13 @@ public class ConfigService {
         WriteFile(path, toJson(object));
     }
 
-    public <T> T fromJson(Class<T> clazz, String json) throws IOException {
+    public static <T> T fromJson(Class<T> clazz, String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enableDefaultTyping();
         return mapper.readValue(json, clazz);
     }
 
-    public String toJson(Object obj) throws JsonProcessingException {
+    public static String toJson(Object obj) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         //https://www.baeldung.com/jackson-inheritance
         objectMapper.enableDefaultTyping();

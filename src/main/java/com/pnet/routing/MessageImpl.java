@@ -10,10 +10,10 @@ import lombok.Value;
 @Value
 @RequiredArgsConstructor
 public class MessageImpl implements Message {
-    private final long id=0;
+    private final long id;
     @JsonProperty("outgoing")
     private final boolean isOutgoing;
-    public final int senderUserId=0;
-    public final long chatId=0;
+    public final int senderUserId;
+    public final long chatId;
     public final String text;
 }

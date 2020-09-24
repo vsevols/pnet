@@ -25,7 +25,7 @@ public class Router {
         load();
         telega = new Telega();
         telega.init();
-        telega.onMessage = msg -> onMessage(msg);
+        telega.onMessage = msg -> incomingMessage(msg);
     }
 
 
@@ -47,16 +47,26 @@ public class Router {
     private void checkProcessStartingMessage() {
         if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
-        processMessage(new MessageImpl(true, "Здрасьте"));
+        processMessage(new MessageImpl(0, true, 0, 0,  "Здрасьте"));
     }
 
-    private void onMessage(Message msg) {
+    private void incomingMessage(Message msg) {
         //Отфильтруем конференции
         if(msg.getSenderUserId()!=msg.getChatId())
             return;
 
-        config.incomingMessages.add(new RoutingMessage(msg, false));
+        try {
+            config.incomingMessages.add(RoutingMessage.fromMessage(msg));
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
         save();
+
+        try {
+            load();//test
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
     }
 
     private void processMessage(Message msg) {
