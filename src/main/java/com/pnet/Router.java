@@ -47,7 +47,7 @@ public class Router {
     private void checkProcessStartingMessage() {
         if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
-        processMessage(new MessageImpl("Здрасьте"));
+        processMessage(new MessageImpl(true, "Здрасьте"));
     }
 
     private void onMessage(Message msg) {

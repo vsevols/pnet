@@ -19,12 +19,12 @@ class ConfigServiceTest {
     void saveLoadConfig() throws IOException {
         Config config = new Config(new ConcurrentHashMap<>(), new ArrayList<>());
         config.victims.put(123, new Victim(123, ""));
-        config.incomingMessages.add(new RoutingMessage(new com.pnet.routing.MessageImpl("testText"), false));
+        config.incomingMessages.add(new RoutingMessage(new com.pnet.routing.MessageImpl(true,"testText"), false));
         ConfigService.saveConfig(Config.toDataPath("test.json"), config);
         config = ConfigService.loadConfig(Config.toDataPath("test.json"));
         assertEquals(1, config.victims.size());
         assertEquals(123, config.victims.get(123).id);
         assertEquals(1, config.incomingMessages.size());
-        assertTrue("testText"==config.incomingMessages.get(0).getText());
+        assertEquals("testText", config.incomingMessages.get(0).getText());
     }
 }
