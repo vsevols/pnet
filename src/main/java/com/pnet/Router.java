@@ -17,9 +17,9 @@ public class Router {
     private static final int MAX_COPIES = 3;
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private Telega telega;
-    private ConcurrentHashMap<Integer, Victim> victims = new ConcurrentHashMap<>();
     private int copiesSent;
     private LocalDateTime lastMessageMoment = LocalDateTime.now().minusDays(1);
+    private Config config;
 
     public void Init() throws CantLoadLibrary, IOException {
         load();
@@ -57,9 +57,17 @@ public class Router {
 
         copiesSent=0;
         for (Victim victim :
-                victims.values()) {
-            if(victimProcess(victim, msg))
+                config.victims.values()) {
+            if(victimProcess(victim, msg)){
+                if(msg.getId()>=config.lastProcessedMessageId) {
+                    config.lastProcessedMessageId = msg.getId();
+                    save();
+                }
+                else throw new RuntimeException(
+                        String.format("msg.getId()<config.lastProcessedMessageId %d %d",
+                                msg.getId(), config.lastProcessedMessageId));
                 return;
+            }
         }
         if(addMoreVictims())
             processMessage(msg);
@@ -77,8 +85,8 @@ public class Router {
                 return wasAdded;
             }
             for (Integer member : members) {
-                if(!victims.containsKey(member)) {
-                    victims.put(member, new Victim(member, superGroupName));
+                if(!config.victims.containsKey(member)) {
+                    config.victims.put(member, new Victim(member, superGroupName));
                     wasAdded = true;
                 }
             }
@@ -94,8 +102,7 @@ public class Router {
                 throw new FileNotFoundException(getVictimsFilePath());
             else return;
         }
-        Config config=new ConfigService().ReadJsonFile(Config.class, getVictimsFilePath());
-        victims=config.victims;
+        config=new ConfigService().ReadJsonFile(Config.class, getVictimsFilePath());
     }
 
     private String promptString(String prompt) {
@@ -111,8 +118,6 @@ public class Router {
     }
 
     private void save() {
-        Config config=new Config();
-        config.victims=victims;
         try {
             new ConfigService().WriteJsonFile(getVictimsFilePath(), config);
         } catch (IOException ioException) {
