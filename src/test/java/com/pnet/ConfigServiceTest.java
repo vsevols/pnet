@@ -23,6 +23,7 @@ class ConfigServiceTest {
         ConfigService.saveConfig(Config.toDataPath("test.json"), config);
         config = ConfigService.loadConfig(Config.toDataPath("test.json"));
         assertEquals(1, config.victims.size());
+        assertEquals(123, config.victims.get(123).id);
         assertEquals(1, config.incomingMessages.size());
         assertTrue("testText"==config.incomingMessages.get(0).getText());
     }

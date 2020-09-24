@@ -65,6 +65,7 @@ public class ConfigService {
 
     public <T> T fromJson(Class<T> clazz, String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.enableDefaultTyping();
         return mapper.readValue(json, clazz);
     }
 

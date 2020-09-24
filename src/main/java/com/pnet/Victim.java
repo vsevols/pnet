@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 //@AllArgsConstructor
 @RequiredArgsConstructor
 public class Victim {
-    @JsonProperty("id")
     public final int id;
-    @JsonProperty("groupName")
     public final String groupName;
 }
