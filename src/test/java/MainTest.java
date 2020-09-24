@@ -1,4 +1,5 @@
 import com.pnet.ConfigService;
+import com.pnet.Debug;
 import com.pnet.secure.Config;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
@@ -14,10 +15,12 @@ class MainTest {
 
     @BeforeEach
     void setUp() {
+        Debug.debug=new Debug();
     }
 
     @AfterEach
     void tearDown() {
+        Debug.debug=new Debug();
     }
 
     @Disabled //test for debug
@@ -28,6 +31,7 @@ class MainTest {
         File dataFile = new File(ConfigService.getDataFilePath());
         FileCopyUtils.copy(new File(localTestsDataPath+"mainIncomingMessageEmulate.json"),
                 dataFile);
+        Debug.debug.dontAddVictims=true;
         Main.main(new String[0]);
     }
 

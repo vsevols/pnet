@@ -163,13 +163,17 @@ public class Telega {
                     e.printStackTrace();
                 }
                 break;
+            case TdApi.User.CONSTRUCTOR:
+                TdApi.User user = (TdApi.User)object;
+                users.put(user.id, user);
+                break;
             case TdApi.UpdateUser.CONSTRUCTOR:
                 TdApi.UpdateUser updateUser = (TdApi.UpdateUser) object;
                 users.put(updateUser.user.id, updateUser.user);
                 break;
             case TdApi.UpdateUserStatus.CONSTRUCTOR:  {
                 TdApi.UpdateUserStatus updateUserStatus = (TdApi.UpdateUserStatus) object;
-                TdApi.User user = users.get(updateUserStatus.userId);
+                user = users.get(updateUserStatus.userId);
                 synchronized (user) {
                     user.status = updateUserStatus.status;
                 }
@@ -517,8 +521,14 @@ public class Telega {
     }
 
     public LocalDateTime getUserLastSeen(int id, String superGroupName) throws Exception {
-        if(null==users.get(id))
-            getSupergroupMembers(superGroupName);
+        if(null==users.get(id)){
+            if(!"".equals(superGroupName))
+                getSupergroupMembers(superGroupName);
+            else
+                if (getMe()==id)
+                    return getUserLastSeen(id, superGroupName);
+                else throw new NoSuchElementException(String.valueOf(id));
+        }
         while(null==users.get(id))
             process(SYNC_TIMEOUT_MILLIS);
 
@@ -617,8 +627,12 @@ public class Telega {
         return null;
     }
 
-    public int getMe() throws TdApiException {
-        return client.syncRequest(new TdApi.GetMe(), new TdApi.UpdateUser()).user.id;
+    public int getMe() throws Exception {
+        try {
+            return client.syncRequest(new TdApi.GetMe(), new TdApi.UpdateUser()).user.id;
+        } catch (TdApiException e) {
+            throw new Exception(e);
+        }
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{

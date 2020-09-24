@@ -10,12 +10,14 @@ import it.tdlight.tdlight.utils.CantLoadLibrary;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 public class Router {
 
     private static final int MAX_COPIES = 3;
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
+    private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
     private Telega telega;
     private LocalDateTime lastMessageMoment = LocalDateTime.now().minusDays(1);
     private Config config;
@@ -70,18 +72,25 @@ public class Router {
         for (Victim victim :
                 config.victims.values()) {
             if(victimProcess(victim, msg)){
-                if(msg.getId()>=config.lastProcessedMessageId) {
-                    config.lastProcessedMessageId = msg.getId();
-                    save();
-                }
-                else throw new RuntimeException(
-                        String.format("msg.getId()<config.lastProcessedMessageId %d %d",
-                                msg.getId(), config.lastProcessedMessageId));
+                incomingMessageArchivate(msg);
                 return;
             }
         }
-        if(addMoreVictims())
+        if(!Debug.debug.dontAddVictims&&addMoreVictims())
             processMessage(msg);
+    }
+
+    private void incomingMessageArchivate(RoutingMessage msg) {
+        int i = config.incomingMessages.indexOf(msg);
+        if(i<0)
+            throw new NoSuchElementException();
+        config.incomingMessagesArchive.add(msg);
+        config.incomingMessages.remove(msg);
+
+        while(config.incomingMessagesArchive.size()>MAX_MESSAGES_ARCHIVE_SIZE)
+            config.incomingMessagesArchive.remove(0);
+
+        save();
     }
 
     private boolean addMoreVictims(){
@@ -171,7 +180,7 @@ public class Router {
     }
 
     private boolean checkArchivate(Victim victim) {
-        //TODO: здесь, возможно прийдётся подменять victims
+        //TODO: здесь, возможно прийдётся подменять victims, или, лучше: изменить цикл на i-deletedOffset
         return false;
     }
 }

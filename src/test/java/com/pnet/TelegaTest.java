@@ -71,7 +71,7 @@ public class TelegaTest {
     }
 
     @Test
-    void getMeThenPrintMyId() throws TdApiException {
+    void getMeThenPrintMyId() throws TdApiException, Exception {
         System.out.println(telega.getMe());
     }
 }

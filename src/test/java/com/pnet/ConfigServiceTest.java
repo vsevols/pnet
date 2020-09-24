@@ -19,7 +19,7 @@ class ConfigServiceTest {
 
     @Test
     void saveLoadConfig() throws IOException {
-        Config config = new Config(new ConcurrentHashMap<>(), new ArrayList<>());
+        Config config = emptyConfig();
         config.victims.put(123, new Victim(123, ""));
         config.incomingMessages.add(new RoutingMessage(
                 new com.pnet.routing.MessageImpl(0, true, 0, 0,"testText"), false));
@@ -31,10 +31,14 @@ class ConfigServiceTest {
         assertEquals("testText", config.incomingMessages.get(0).getText());
     }
 
+    private Config emptyConfig() {
+        return new Config(new ConcurrentHashMap<>(), new ArrayList<>(), new ArrayList<>());
+    }
+
     @Disabled
     @Test
     void loadConfigTdApiMessage() throws IOException {
-        Config config = new Config(new ConcurrentHashMap<>(), new ArrayList<>());
+        Config config = emptyConfig();
         String path = Config.toDataPath("loadConfigTdApiMessage.json");
         config = ConfigService.loadConfig(path);
         assertEquals(1, config.incomingMessages.size());
