@@ -17,7 +17,6 @@ public class Router {
     private static final int MAX_COPIES = 3;
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private Telega telega;
-    private int copiesSent;
     private LocalDateTime lastMessageMoment = LocalDateTime.now().minusDays(1);
     private Config config;
 
@@ -47,7 +46,8 @@ public class Router {
     private void checkProcessStartingMessage() {
         if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
-        processMessage(new MessageImpl(0, true, 0, 0,  "Здрасьте"));
+        processMessage(new RoutingMessage(
+                new MessageImpl(0, true, 0, 0,  "Здрасьте"), true));
     }
 
     private void incomingMessage(Message msg) {
@@ -61,19 +61,12 @@ public class Router {
             ioException.printStackTrace();
         }
         save();
-
-        try {
-            load();//test
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
     }
 
-    private void processMessage(Message msg) {
+    private void processMessage(RoutingMessage msg) {
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
         //UPD: Возможен спам. Лучше вручную
 
-        copiesSent=0;
         for (Victim victim :
                 config.victims.values()) {
             if(victimProcess(victim, msg)){
@@ -121,7 +114,7 @@ public class Router {
         ConfigService.saveConfig(config);
     }
 
-    private boolean victimProcess(Victim victim, Message msg) {
+    private boolean victimProcess(Victim victim, RoutingMessage msg) {
         if(victim.id==msg.getSenderUserId())
             return false;
         if(checkArchivate(victim))
@@ -130,17 +123,14 @@ public class Router {
             return false;
 
         try {
-            copiesSent++;
+            msg.setReproducedCount(msg.getReproducedCount()+1);
             Logger.getGlobal().severe(msg.toString());
-            if(copiesSent>9999)throw new TdApiException(null);
-            return true;//Заглушка
-            //telega.sendMessage(victim.id, msg.text);
+            telega.sendMessage(victim.id, msg.getText());
         } catch (TdApiException e) {
             e.printStackTrace();
         }
 
-        if(copiesSent>=MAX_COPIES){
-            copiesSent=0;
+        if(msg.getReproducedCount()>=MAX_COPIES){
             return true;
         }
         return false;

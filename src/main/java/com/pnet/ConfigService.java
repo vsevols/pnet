@@ -1,15 +1,18 @@
 package com.pnet;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.pnet.secure.Config;
+import lombok.Setter;
 
 import java.io.*;
 
 import static com.pnet.PNSystem.promptString;
 
 public class ConfigService {
+
     static Config loadConfig() throws IOException {
         return loadConfig(getDataFilePath());
     }
@@ -24,7 +27,7 @@ public class ConfigService {
         return new ConfigService().ReadJsonFile(Config.class, path);
     }
 
-    static String getDataFilePath() {
+    public static String getDataFilePath() {
         return Config.toDataPath("data.json");
     }
 
@@ -66,6 +69,7 @@ public class ConfigService {
     public static <T> T fromJson(Class<T> clazz, String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enableDefaultTyping();
+        mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
         return mapper.readValue(json, clazz);
     }
 

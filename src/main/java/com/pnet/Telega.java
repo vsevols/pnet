@@ -617,6 +617,10 @@ public class Telega {
         return null;
     }
 
+    public int getMe() throws TdApiException {
+        return client.syncRequest(new TdApi.GetMe(), new TdApi.UpdateUser()).user.id;
+    }
+
     private class AuthorizationRequestHandler implements ResultHandler{
         @Override
         public boolean onResult(TdApi.Object object) {

@@ -69,4 +69,9 @@ public class TelegaTest {
         List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10);
         Assertions.assertNotEquals(0, chatHistory.size());
     }
+
+    @Test
+    void getMeThenPrintMyId() throws TdApiException {
+        System.out.println(telega.getMe());
+    }
 }
