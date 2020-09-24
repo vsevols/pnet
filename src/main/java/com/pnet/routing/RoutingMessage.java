@@ -11,5 +11,5 @@ public class RoutingMessage implements Message {
     @Delegate
     private final Message msg;
     private final boolean isGreeting;
-    private int copiesSent;
+    private int reproducedCount;
 }

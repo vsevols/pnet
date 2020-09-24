@@ -367,7 +367,11 @@ public class Telega {
                 break;
             case TdApi.Message.CONSTRUCTOR:
                 onMessage.onMessage(new MessageImpl((TdApi.Message) object));
-                break;/*
+                break;
+            case TdApi.UpdateNewMessage.CONSTRUCTOR:
+                onMessage.onMessage(new MessageImpl(((TdApi.UpdateNewMessage)object).message));
+                break;
+                /*
             case TdApi.Error.CONSTRUCTOR:
                 print("TdApi error: "+((TdApi.Error)object).message);
                 break;*/

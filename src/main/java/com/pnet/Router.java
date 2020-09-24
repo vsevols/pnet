@@ -10,7 +10,6 @@ import it.tdlight.tdlight.utils.CantLoadLibrary;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class Router {
@@ -33,11 +32,8 @@ public class Router {
     public void run() {
         while(true){
             telega.process(20000);
-            /*
             processIncomingMessages();
             checkProcessStartingMessage();
-
-             */
         }
 
     }
@@ -108,13 +104,13 @@ public class Router {
     }
 
     private void load() throws IOException {
-        if(!new File(getVictimsFilePath()).isFile()) {
+        if(!new File(getDataFilePath()).isFile()) {
             if (!"initConfig".equals(promptString(
-                    String.format("%s not exists. Type 'initConfig' to create new", getVictimsFilePath()))))
-                throw new FileNotFoundException(getVictimsFilePath());
+                    String.format("%s not exists. Type 'initConfig' to create new", getDataFilePath()))))
+                throw new FileNotFoundException(getDataFilePath());
             else return;
         }
-        config=new ConfigService().ReadJsonFile(Config.class, getVictimsFilePath());
+        config=new ConfigService().ReadJsonFile(Config.class, getDataFilePath());
     }
 
     private String promptString(String prompt) {
@@ -131,14 +127,14 @@ public class Router {
 
     private void save() {
         try {
-            new ConfigService().WriteJsonFile(getVictimsFilePath(), config);
+            new ConfigService().WriteJsonFile(getDataFilePath(), config);
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
     }
 
-    private String getVictimsFilePath() {
-        return Config.toDataPath("victims.json");
+    private String getDataFilePath() {
+        return Config.toDataPath("data.json");
     }
 
     private boolean victimProcess(Victim victim, Message msg) {
