@@ -33,7 +33,7 @@ public class Router {
         while(true){
             telega.process(20000);
             processIncomingMessages();
-            checkProcessStartingMessage();
+            //checkProcessStartingMessage();
         }
 
     }

@@ -4,8 +4,10 @@ import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.MessageImpl;
 import it.tdlight.tdlib.TdApi;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +26,16 @@ class ConfigServiceTest {
         config = ConfigService.loadConfig(Config.toDataPath("test.json"));
         assertEquals(1, config.victims.size());
         assertEquals(123, config.victims.get(123).id);
+        assertEquals(1, config.incomingMessages.size());
+        assertEquals("testText", config.incomingMessages.get(0).getText());
+    }
+
+    @Disabled
+    @Test
+    void loadConfigTdApiMessage() throws IOException {
+        Config config = new Config(new ConcurrentHashMap<>(), new ArrayList<>());
+        String path = Config.toDataPath("loadConfigTdApiMessage.json");
+        config = ConfigService.loadConfig(path);
         assertEquals(1, config.incomingMessages.size());
         assertEquals("testText", config.incomingMessages.get(0).getText());
     }
