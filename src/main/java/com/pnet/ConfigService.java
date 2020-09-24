@@ -17,11 +17,11 @@ public class ConfigService {
     static Config loadConfig(String path) throws IOException {
         if(!new File(path).isFile()) {
             if (!"initConfig".equals(promptString(
-                    String.format("%s not exists. Type 'initConfig' to create new", getDataFilePath()))))
-                throw new FileNotFoundException(getDataFilePath());
+                    String.format("%s not exists. Type 'initConfig' to create new", path))))
+                throw new FileNotFoundException(path);
             else return null;
         }
-        return new ConfigService().ReadJsonFile(Config.class, getDataFilePath());
+        return new ConfigService().ReadJsonFile(Config.class, path);
     }
 
     static String getDataFilePath() {
@@ -70,9 +70,9 @@ public class ConfigService {
 
     public String toJson(Object obj) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        ObjectWriter ow = objectMapper.writer().withDefaultPrettyPrinter();
         //https://www.baeldung.com/jackson-inheritance
         objectMapper.enableDefaultTyping();
+        ObjectWriter ow = objectMapper.writer().withDefaultPrettyPrinter();
         return ow.writeValueAsString(obj);
     }
 
