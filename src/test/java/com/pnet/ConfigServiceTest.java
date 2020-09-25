@@ -2,18 +2,13 @@ package com.pnet;
 
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
-import com.pnet.telega.MessageImpl;
-import com.pnet.util.KeyValueList;
-import it.tdlight.tdlib.TdApi;
+import com.pnet.util.KeyedList;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static com.pnet.ConfigService.getDataFilePath;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigServiceTest {
@@ -33,7 +28,7 @@ class ConfigServiceTest {
     }
 
     private Config emptyConfig() {
-        return new Config(new KeyValueList<>(Victim::getKey), new ArrayList<>(), new ArrayList<>());
+        return new Config(new KeyedList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
     @Disabled

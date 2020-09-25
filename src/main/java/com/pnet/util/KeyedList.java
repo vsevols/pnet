@@ -6,7 +6,7 @@ import lombok.experimental.Delegate;
 import java.util.ArrayList;
 
 @RequiredArgsConstructor
-public class KeyValueList<K, V extends OnGetKey> {
+public class KeyedList<K, V extends Keyed> {
     @Delegate
     private final ArrayList<V> list=new ArrayList<>();
     //private final OnGetKey<K, V> onGetKey;
@@ -20,7 +20,7 @@ public class KeyValueList<K, V extends OnGetKey> {
     private int indexOfKey(K key) {
         for (int i = 0; i < list.size(); i++) {
             V v = list.get(i);
-            if (v.fun(v) == key)
+            if (v.getKey() == key)
                 return i;
 
         }
