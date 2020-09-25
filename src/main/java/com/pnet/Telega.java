@@ -10,10 +10,7 @@ import it.tdlight.tdlight.utils.CantLoadLibrary;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -536,17 +533,7 @@ public class Telega {
         while(null==users.get(id))
             process(SYNC_TIMEOUT_MILLIS);
 
-        switch (users.get(id).status.getConstructor()){
-            case TdApi.UserStatusOnline.CONSTRUCTOR:
-            case TdApi.UserStatusRecently.CONSTRUCTOR:
-                return LocalDateTime.now();
-            case TdApi.UserStatusOffline.CONSTRUCTOR:
-                return LocalDateTime.ofInstant(Instant.ofEpochSecond(
-                        ((TdApi.UserStatusOffline)users.get(id).status).wasOnline),
-                        TimeZone.getDefault().toZoneId()
-                );
-        }
-        return LocalDateTime.of(LocalDate.MIN, LocalTime.MIN);
+        return users.get(id).getLastSeenFromSuper();
     }
 
     public long searchPublicChat(String name){
@@ -636,6 +623,13 @@ public class Telega {
             return client.syncRequest(new TdApi.GetMe(), new TdApi.UpdateUser()).user.id;
         } catch (TdApiException e) {
             throw new Exception(e);
+        }
+    }
+
+    public void setUserLastSeenNow(int id) {
+        CachedUser cachedUser = users.get(id);
+        if(null==cachedUser){
+            users.put(id, new CachedUser(id));
         }
     }
 

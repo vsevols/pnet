@@ -33,10 +33,12 @@ public class Router {
 
 
     public void run() {
+        LocalDateTime startMoment = LocalDateTime.now();
         while(true){
             telega.process(20000);
             processIncomingMessages();
-            if(!Debug.debug.dontGenerateStartingMessages)
+            if(startMoment.plusSeconds(20).isBefore(LocalDateTime.now())
+                    &&!Debug.debug.dontGenerateStartingMessages)
                 checkGenerateStartingMessage();
         }
 
@@ -69,12 +71,12 @@ public class Router {
     }
 
     private void processMessage(RoutingMessage msg) {
+        setLastSeenNow(msg.getSenderUserId()); //TODO:setLastSeenNotBefore
         Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
         //UPD: Возможен спам. Лучше складывать в отдельную коллекцию для ручного аппрува
 
         if (null!=victim){
-            //TODO: Update Presence
             config.victims.moveToFirst(victim.id);
             save();
         }
@@ -89,6 +91,10 @@ public class Router {
         }
         if(!Debug.debug.dontAddVictims&&addMoreVictims())
             processMessage(msg);
+    }
+
+    private void setLastSeenNow(int id) {
+        telega.setUserLastSeenNow(id);
     }
 
     private void incomingMessageArchivate(RoutingMessage msg) {
