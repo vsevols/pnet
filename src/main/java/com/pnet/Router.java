@@ -74,6 +74,7 @@ public class Router {
         //UPD: Возможен спам. Лучше складывать в отдельную коллекцию для ручного аппрува
 
         if (null!=victim){
+            //TODO: Update Presence
             config.victims.moveToFirst(victim.id);
             save();
         }
@@ -142,7 +143,7 @@ public class Router {
             return false;
 
         try {
-            Logger.getGlobal().info(String.format("Reproducing message %s to : %s ", msg, victim));
+            Logger.getGlobal().info(String.format("Reproducing message %s \nto :\n %s ", msg, victim));
             if(!Debug.debug.dontReallySendMessages)
                 telega.sendMessage(victim.id, msg.getText());
             msg.setReproducedCount(msg.getReproducedCount()+1);

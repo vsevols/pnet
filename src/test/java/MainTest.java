@@ -39,6 +39,8 @@ class MainTest {
                 dataFile);
     }
 
+    //test for debug
+    @Disabled
     @Test
     void emptyConfigDontRealySendMessages() throws IOException, CantLoadLibrary {
         Debug.debug.dontReallySendMessages=true;
