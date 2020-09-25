@@ -1,19 +1,18 @@
 package com.pnet.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.pnet.Victim;
-import com.pnet.routing.VictimList;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.List;
 
 @JsonIgnoreProperties({"empty"})
 @RequiredArgsConstructor
-public class KeyValueList<K, V> {
+public class KeyValueList<K, V> extends AbstractList<V> {
     @Delegate
     private final ArrayList<V> list=new ArrayList<>();
-    //private final OnGetKey<K, V> onGetKey;
 
     public V getOrDefault(K key, V defaultValue) {
         int i = indexOfKey(key);
