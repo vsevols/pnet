@@ -3,6 +3,7 @@ package com.pnet;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.MessageImpl;
+import com.pnet.util.KeyValueList;
 import it.tdlight.tdlib.TdApi;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class ConfigServiceTest {
     }
 
     private Config emptyConfig() {
-        return new Config(new ConcurrentHashMap<>(), new ArrayList<>(), new ArrayList<>());
+        return new Config(new KeyValueList<>(Victim::getKey), new ArrayList<>(), new ArrayList<>());
     }
 
     @Disabled

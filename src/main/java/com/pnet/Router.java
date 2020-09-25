@@ -68,17 +68,21 @@ public class Router {
     }
 
     private void processMessage(RoutingMessage msg) {
+        Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
-        //UPD: Возможен спам. Лучше вручную
+        //UPD: Возможен спам. Лучше складывать в отдельную коллекцию для ручного аппрува
 
-        //TODO: Перемещать sender в начало списка
+        if (null!=victim){
+            config.victims.moveToFirst(victim.id);
+        }
 
-        for (Victim victim :
-                config.victims.values()) {
+        for (int i = 0; i < config.victims.size(); i++) {
+            victim=config.victims.get(i);
             if(victimProcess(victim, msg)){
                 incomingMessageArchivate(msg);
                 return;
-            }
+        }
+
         }
         if(!Debug.debug.dontAddVictims&&addMoreVictims())
             processMessage(msg);

@@ -11,4 +11,8 @@ import lombok.RequiredArgsConstructor;
 public class Victim {
     public final int id;
     public final String groupName;
+
+    public static int getKey(Victim victim) {
+        return victim.id;
+    }
 }
