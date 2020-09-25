@@ -36,7 +36,8 @@ public class Router {
         while(true){
             telega.process(20000);
             processIncomingMessages();
-            //checkProcessStartingMessage();
+            if(!Debug.debug.dontGenerateStartingMessages)
+                checkGenerateStartingMessage();
         }
 
     }
@@ -47,7 +48,7 @@ public class Router {
         }
     }
 
-    private void checkProcessStartingMessage() {
+    private void checkGenerateStartingMessage() {
         if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
         processMessage(new RoutingMessage(
@@ -74,6 +75,7 @@ public class Router {
 
         if (null!=victim){
             config.victims.moveToFirst(victim.id);
+            save();
         }
 
         for (int i = 0; i < config.victims.size(); i++) {

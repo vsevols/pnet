@@ -1,27 +1,19 @@
 package com.pnet;
 
 import com.pnet.routing.RoutingMessage;
-import com.pnet.routing.VictimList;
 import com.pnet.secure.Config;
-import com.pnet.telega.MessageImpl;
-import com.pnet.util.KeyValueList;
-import it.tdlight.tdlib.TdApi;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static com.pnet.ConfigService.getDataFilePath;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigServiceTest {
 
     @Test
     void saveLoadConfig() throws IOException {
-        Config config = emptyConfig();
+        Config config = Config.emptyConfig();
         config.victims.put(123, new Victim(123, ""));
         config.incomingMessages.add(new RoutingMessage(
                 new com.pnet.routing.MessageImpl(0, true, 0, 0,"testText"), false));
@@ -33,14 +25,10 @@ class ConfigServiceTest {
         assertEquals("testText", config.incomingMessages.get(0).getText());
     }
 
-    private Config emptyConfig() {
-        return new Config(new VictimList(), new ArrayList<>(), new ArrayList<>());
-    }
-
     @Disabled
     @Test
     void loadConfigTdApiMessage() throws IOException {
-        Config config = emptyConfig();
+        Config config;
         String path = Config.toDataPath("loadConfigTdApiMessage.json");
         config = ConfigService.loadConfig(path);
         assertEquals(1, config.incomingMessages.size());

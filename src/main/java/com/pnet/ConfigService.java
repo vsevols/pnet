@@ -22,7 +22,11 @@ public class ConfigService {
             if (!"initConfig".equals(promptString(
                     String.format("%s not exists. Type 'initConfig' to create new", path))))
                 throw new FileNotFoundException(path);
-            else return null;
+            else{
+                Config config = Config.emptyConfig();
+                saveConfig(config);
+                return config;
+            }
         }
         return new ConfigService().ReadJsonFile(Config.class, path);
     }

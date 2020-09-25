@@ -1,5 +1,6 @@
 package com.pnet.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.pnet.Victim;
 import com.pnet.routing.VictimList;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.experimental.Delegate;
 
 import java.util.ArrayList;
 
+@JsonIgnoreProperties({"empty"})
 @RequiredArgsConstructor
 public class KeyValueList<K, V> {
     @Delegate
