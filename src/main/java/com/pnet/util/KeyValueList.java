@@ -1,12 +1,14 @@
 package com.pnet.util;
 
+import com.pnet.Victim;
+import com.pnet.routing.VictimList;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 
 import java.util.ArrayList;
 
 @RequiredArgsConstructor
-public class KeyValueList<K, V extends OnGetKey> {
+public class KeyValueList<K, V> {
     @Delegate
     private final ArrayList<V> list=new ArrayList<>();
     //private final OnGetKey<K, V> onGetKey;
@@ -19,12 +21,15 @@ public class KeyValueList<K, V extends OnGetKey> {
 
     private int indexOfKey(K key) {
         for (int i = 0; i < list.size(); i++) {
-            V v = list.get(i);
-            if (v.fun(v) == key)
+            if (getKey(list.get(i)) == key)
                 return i;
 
         }
         return -1;
+    }
+
+    protected K getKey(V v) {
+        return null;
     }
 
     public void moveToFirst(K key) {

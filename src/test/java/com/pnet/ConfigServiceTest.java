@@ -1,6 +1,7 @@
 package com.pnet;
 
 import com.pnet.routing.RoutingMessage;
+import com.pnet.routing.VictimList;
 import com.pnet.secure.Config;
 import com.pnet.telega.MessageImpl;
 import com.pnet.util.KeyValueList;
@@ -33,7 +34,7 @@ class ConfigServiceTest {
     }
 
     private Config emptyConfig() {
-        return new Config(new KeyValueList<>(Victim::getKey), new ArrayList<>(), new ArrayList<>());
+        return new Config(new VictimList(), new ArrayList<>(), new ArrayList<>());
     }
 
     @Disabled
