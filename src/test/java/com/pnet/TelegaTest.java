@@ -2,9 +2,7 @@ package com.pnet;
 
 import com.pnet.abstractions.Message;
 import com.pnet.secure.Config;
-import com.pnet.telega.MessageImpl;
 import com.pnet.telega.TdApiException;
-import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +38,7 @@ public class TelegaTest {
     @Test
     public void getUserLastSeen() throws Exception {
         Integer member = telega.getSupergroupMembers(Config.TEST_CHAT_NAME).get(0);
-        telega.getUserLastSeen(member, Config.TEST_CHAT_NAME);
+        telega.getUserLastSeen(member, Config.TEST_CHAT_NAME, Router.USER_CACHE_EXPIRED_MINUTES);
     }
 
     @BeforeEach

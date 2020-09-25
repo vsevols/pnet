@@ -18,6 +18,8 @@ public class Router {
     private static final int MAX_COPIES = 3;
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
+    public static final int USER_CACHE_EXPIRED_MINUTES = 10;
+    public static final int MAX_MINUTES_RECENT_SEEN = USER_CACHE_EXPIRED_MINUTES*2;
     private Telega telega;
     private LocalDateTime lastMessageMoment = LocalDateTime.now().minusDays(1);
     private Config config;
@@ -68,6 +70,8 @@ public class Router {
     private void processMessage(RoutingMessage msg) {
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
         //UPD: Возможен спам. Лучше вручную
+
+        //TODO: Перемещать sender в начало списка
 
         for (Victim victim :
                 config.victims.values()) {
@@ -171,12 +175,12 @@ public class Router {
     private boolean isRecentLastSeen(Victim victim) {
         LocalDateTime lastSeen= null;
         try {
-            lastSeen = telega.getUserLastSeen(victim.id, victim.groupName);
+            lastSeen = telega.getUserLastSeen(victim.id, victim.groupName, USER_CACHE_EXPIRED_MINUTES);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-        return lastSeen.isAfter(LocalDateTime.now().minusMinutes(10));
+        return lastSeen.isAfter(LocalDateTime.now().minusMinutes(MAX_MINUTES_RECENT_SEEN));
     }
 
     private boolean checkArchivate(Victim victim) {

@@ -37,7 +37,7 @@ public class Telega {
     private static final Lock authorizationLock = new ReentrantLock();
     private static final Condition gotAuthorization = authorizationLock.newCondition();
 
-    private static final ConcurrentMap<Integer, TdApi.User> users = new ConcurrentHashMap<Integer, TdApi.User>();
+    private static final ConcurrentMap<Integer, CachedUser> users = new ConcurrentHashMap<Integer, CachedUser>();
     private static final ConcurrentMap<Integer, TdApi.BasicGroup> basicGroups = new ConcurrentHashMap<Integer, TdApi.BasicGroup>();
     private static final ConcurrentMap<Integer, TdApi.Supergroup> supergroups = new ConcurrentHashMap<Integer, TdApi.Supergroup>();
     private static final ConcurrentMap<Integer, TdApi.SecretChat> secretChats = new ConcurrentHashMap<Integer, TdApi.SecretChat>();
@@ -165,11 +165,11 @@ public class Telega {
                 break;
             case TdApi.User.CONSTRUCTOR:
                 TdApi.User user = (TdApi.User)object;
-                users.put(user.id, user);
+                users.put(user.id, CachedUser.fromUser(user));
                 break;
             case TdApi.UpdateUser.CONSTRUCTOR:
                 TdApi.UpdateUser updateUser = (TdApi.UpdateUser) object;
-                users.put(updateUser.user.id, updateUser.user);
+                users.put(updateUser.user.id, CachedUser.fromUser(updateUser.user));
                 break;
             case TdApi.UpdateUserStatus.CONSTRUCTOR:  {
                 TdApi.UpdateUserStatus updateUserStatus = (TdApi.UpdateUserStatus) object;
@@ -520,15 +520,19 @@ public class Telega {
             client.processUpdates();
     }
 
-    public LocalDateTime getUserLastSeen(int id, String superGroupName) throws Exception {
+    public LocalDateTime getUserLastSeen(int id, String superGroupName, int cacheExpiredMins) throws Exception {
         if(null==users.get(id)){
             if(!"".equals(superGroupName))
                 getSupergroupMembers(superGroupName);
             else
                 if (getMe()==id)
-                    return getUserLastSeen(id, superGroupName);
+                    return getUserLastSeen(id, superGroupName, cacheExpiredMins);
                 else throw new NoSuchElementException(String.valueOf(id));
+        }else if(users.get(id).isExpired(cacheExpiredMins)){
+            users.remove(users.get(id));
+            return getUserLastSeen(id, superGroupName, cacheExpiredMins);
         }
+
         while(null==users.get(id))
             process(SYNC_TIMEOUT_MILLIS);
 
