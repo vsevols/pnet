@@ -2,6 +2,7 @@ package com.pnet;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.pnet.secure.Config;
@@ -71,9 +72,14 @@ public class ConfigService {
     }
 
     public static <T> T fromJson(Class<T> clazz, String json) throws IOException {
+        return fromJson(clazz, json, false);
+    }
+
+    public static <T> T fromJson(Class<T> clazz, String json, boolean ignoreUnknownProperties) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enableDefaultTyping();
         mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, !ignoreUnknownProperties);
         return mapper.readValue(json, clazz);
     }
 

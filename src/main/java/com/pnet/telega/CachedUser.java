@@ -20,7 +20,8 @@ public class CachedUser extends TdApi.User {
     }
     public static CachedUser fromUser(TdApi.User user) {
         try {
-            return ConfigService.fromJson(CachedUser.class, ConfigService.toJson(user));
+            //UnrecognizedPropertyException: Unrecognized field "constructor" (class it.tdlight.tdlib.TdApi$UserStatusOffline
+            return ConfigService.fromJson(CachedUser.class, ConfigService.toJson(user), true);
         } catch (IOException ioException) {
             ioException.printStackTrace();
             return new CachedUser(user.id);
