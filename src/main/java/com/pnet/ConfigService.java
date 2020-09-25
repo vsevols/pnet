@@ -36,7 +36,7 @@ public class ConfigService {
         return Config.toDataPath("data.json");
     }
 
-    static void saveConfig(Config config) {
+    public static void saveConfig(Config config) {
         saveConfig(getDataFilePath(), config);
     }
 

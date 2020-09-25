@@ -142,9 +142,11 @@ public class Router {
             return false;
 
         try {
+            Logger.getGlobal().info(String.format("Reproducing message %s to : %s ", msg, victim));
+            if(!Debug.debug.dontReallySendMessages)
+                telega.sendMessage(victim.id, msg.getText());
             msg.setReproducedCount(msg.getReproducedCount()+1);
-            Logger.getGlobal().severe(msg.toString());
-            telega.sendMessage(victim.id, msg.getText());
+            save();
         } catch (TdApiException e) {
             e.printStackTrace();
         }

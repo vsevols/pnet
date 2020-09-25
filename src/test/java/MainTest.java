@@ -26,13 +26,30 @@ class MainTest {
     @Disabled //test for debug
     @Test
     void mainIncomingMessageEmulate() throws IOException, CantLoadLibrary {
+        setTestConfig("mainIncomingMessageEmulate.json");
+        Debug.debug.dontAddVictims=true;
+        Main.main(new String[0]);
+    }
+
+    private void setTestConfig(String etalonConfigName) throws IOException {
         String localTestsDataPath = getLocalTestsDataPath("");
         Config.setDataDirectory(localTestsDataPath);
         File dataFile = new File(ConfigService.getDataFilePath());
-        FileCopyUtils.copy(new File(localTestsDataPath+"mainIncomingMessageEmulate.json"),
+        FileCopyUtils.copy(new File(localTestsDataPath+ etalonConfigName),
                 dataFile);
-        Debug.debug.dontAddVictims=true;
+    }
+
+    @Test
+    void emptyConfigDontRealySendMessages() throws IOException, CantLoadLibrary {
+        Debug.debug.dontReallySendMessages=true;
+        setTestConfig(Config.emptyConfig());
         Main.main(new String[0]);
+    }
+
+    private void setTestConfig(Config config) {
+        String localTestsDataPath = getLocalTestsDataPath("");
+        Config.setDataDirectory(localTestsDataPath);
+        ConfigService.saveConfig(config);
     }
 
     private String getLocalTestsDataPath(String path) {
