@@ -28,9 +28,9 @@ import static java.lang.Thread.sleep;
 public class Telega {
     private static final long SYNC_TIMEOUT_MILLIS = 1000;
     public OnMessageHandler onMessage;
-    private TelegaClient client;
+    private static TelegaClient client;
+    private static boolean haveAuthorization;
     private TdApi.AuthorizationState authorizationState = null;
-    private boolean haveAuthorization;
     private static final Lock authorizationLock = new ReentrantLock();
     private static final Condition gotAuthorization = authorizationLock.newCondition();
 
@@ -63,7 +63,9 @@ public class Telega {
         // Uncomment this line to print TDLib logs to a file
         // Log.setFilePath("logs" + File.separatorChar + "tdlib.log");
 
-        client = TelegaClient.create(object -> Telega.this.processResponse(object));
+        //Workaround for: Can't lock file td.binlog
+        if(null==client)
+            client = TelegaClient.create(object -> Telega.this.processResponse(object));
 
         // Now you can use the client
 
