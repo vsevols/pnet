@@ -162,8 +162,13 @@ public class Router {
             return false;
         if(checkArchivate(victim))
             return false;
-        if(!isVictimSuitable(victim, msg))
+        try {
+            if(!isVictimSuitable(victim, msg))
+                return false;
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
+        }
 
         try {
             Logger.getGlobal().info(String.format("Reproducing message:\n%s \nto:\n %s ", msg, victim));
@@ -181,13 +186,19 @@ public class Router {
         return false;
     }
 
-    private boolean isVictimSuitable(Victim victim, RoutingMessage msg) {
+    private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
+        if(isMe(victim))
+            return false;
         if(!isRecentLastSeen(victim))
             return false;
         if(!noResponseTimeout(victim, msg))
             return false;
 
         return true;
+    }
+
+    private boolean isMe(Victim victim) throws Exception {
+        return telega.getMe()==victim.getId();
     }
 
     private boolean noResponseTimeout(Victim victim, RoutingMessage msg) {

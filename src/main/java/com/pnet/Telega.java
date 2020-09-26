@@ -6,6 +6,7 @@ import com.pnet.telega.*;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
+import jdk.vm.ci.meta.Local;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -530,8 +532,11 @@ public class Telega {
             return getUserLastSeen(id, superGroupName, cacheExpiredMins);
         }
 
-        while(null==users.get(id))
+        if (null==users.get(id))
             process(SYNC_TIMEOUT_MILLIS);
+
+        if (null==users.get(id))
+            return LocalDateTime.MIN;
 
         return users.get(id).getLastSeen();
     }
