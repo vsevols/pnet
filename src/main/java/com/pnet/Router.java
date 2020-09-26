@@ -80,7 +80,7 @@ public class Router {
         if (null!=victim){
             config.victims.moveToFirst(victim.id);
             save();
-        }
+        }else return;
 
         for (int i = 0; i < config.victims.size(); i++) {
             victim=config.victims.get(i);
@@ -147,11 +147,11 @@ public class Router {
             return false;
         if(checkArchivate(victim))
             return false;
-        if(!isVictimSuitable(victim))
+        if(!isVictimSuitable(victim, msg))
             return false;
 
         try {
-            Logger.getGlobal().info(String.format("Reproducing message %s \nto :\n %s ", msg, victim));
+            Logger.getGlobal().info(String.format("Reproducing message:\n%s \nto:\n %s ", msg, victim));
             if(!Debug.debug.dontReallySendMessages)
                 telega.sendMessage(victim.id, msg.getText());
             msg.setReproducedCount(msg.getReproducedCount()+1);
@@ -166,17 +166,21 @@ public class Router {
         return false;
     }
 
-    private boolean isVictimSuitable(Victim victim) {
+    private boolean isVictimSuitable(Victim victim, RoutingMessage msg) {
         if(!isRecentLastSeen(victim))
             return false;
-        if(!noResponseTimeout(victim))
+        if(!noResponseTimeout(victim, msg))
             return false;
 
         return true;
     }
 
-    private boolean noResponseTimeout(Victim victim) {
+    private boolean noResponseTimeout(Victim victim, RoutingMessage msg) {
         List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
+
+        if(msg.isGreeting()&&chatHistory.size()>0)
+            return false;
+
         int outgoingCount=0;
         LocalDateTime incomingMoment=LocalDateTime.MAX;
         for (Message message:

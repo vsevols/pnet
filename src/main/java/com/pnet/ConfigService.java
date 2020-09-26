@@ -14,7 +14,7 @@ import static com.pnet.PNSystem.promptString;
 
 public class ConfigService {
 
-    static Config loadConfig() throws IOException {
+    public static Config loadConfig() throws IOException {
         return loadConfig(getDataFilePath());
     }
 

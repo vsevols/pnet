@@ -46,8 +46,18 @@ class MainTest {
     @Test
     void emptyConfigDontRealySendMessages() throws IOException, CantLoadLibrary {
         Debug.debug.dontReallySendMessages=true;
-        debug.noGreetingMessageTimeout=true;
+        //debug.noGreetingMessageTimeout=true;
         setTestConfig(Config.emptyConfig());
+        Main.main(new String[0]);
+    }
+
+    //test for debug
+    @Disabled
+    @Test
+    void workingConfigCopyDontRealySendMessages() throws IOException, CantLoadLibrary {
+        Debug.debug.dontReallySendMessages=true;
+        //debug.noGreetingMessageTimeout=true;
+        setTestConfig(ConfigService.loadConfig());
         Main.main(new String[0]);
     }
 
