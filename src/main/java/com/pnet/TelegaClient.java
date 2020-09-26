@@ -1,5 +1,6 @@
 package com.pnet;
 
+import com.pnet.abstractions.RetryException;
 import com.pnet.telega.TdApiException;
 import com.pnet.telega.TypedResultHandler;
 import it.tdlight.tdlib.TdApi;
@@ -55,10 +56,12 @@ public class TelegaClient extends Client {
         }while(null!=response);
     }
 
-    public void processUpdates() {
+    public void processUpdates() throws RetryException {
         try {
             processUpdates(true);
         } catch (TdApiException e) {
+            if(e.getCode()==400) //Can't lock file td.binlog
+                throw new RetryException(e);
             e.printStackTrace();
         }
     }

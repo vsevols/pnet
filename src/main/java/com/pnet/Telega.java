@@ -2,6 +2,7 @@ package com.pnet;
 
 import com.pnet.abstractions.Chat;
 import com.pnet.abstractions.Message;
+import com.pnet.abstractions.RetryException;
 import com.pnet.telega.*;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
@@ -51,11 +52,14 @@ public class Telega {
     private volatile String currentPrompt = null;
     private volatile boolean quiting = false;
     private static final String newLine = System.getProperty("line.separator");
+    private boolean initStarted;
 
     public void init() throws CantLoadLibrary {
 
         // Initialize TDLight native libraries
-        Init.start();
+        if(!initStarted)
+            Init.start();
+        initStarted =true;
 
         // Set TDLib log level
         Log.setVerbosityLevel(1);
@@ -63,12 +67,19 @@ public class Telega {
         // Uncomment this line to print TDLib logs to a file
         // Log.setFilePath("logs" + File.separatorChar + "tdlib.log");
 
-        client = TelegaClient.create(object -> Telega.this.processResponse(object));
+        while(true) {
+            client = TelegaClient.create(object -> Telega.this.processResponse(object));
 
-        // Now you can use the client
+            // Now you can use the client
 
-        while (!haveAuthorization) {
-            client.processUpdates();
+            try {
+                while (!haveAuthorization) {
+                    client.processUpdates();
+                }
+                } catch (RetryException e) {
+                    continue;
+                }
+            return;
         }
 
     }
@@ -513,8 +524,13 @@ public class Telega {
 
     public void process(long millis) {
         LocalDateTime till = LocalDateTime.now().plusNanos(millis * 1000);
-        while(till.isAfter(LocalDateTime.now()))
-            client.processUpdates();
+        while(till.isAfter(LocalDateTime.now())) {
+            try {
+                client.processUpdates();
+            } catch (RetryException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public LocalDateTime getUserLastSeen(int id, String superGroupName, int cacheExpiredMins) throws Exception {
@@ -633,6 +649,19 @@ public class Telega {
         }else {
             users.put(id, CachedUser.fromUser(users.remove(id), lastSeenNotBefore));
         }
+    }
+
+    public void destroy() {
+        /*
+        try {
+            client.destroyClient();
+        }catch (Throwable e) {
+            //java.lang.IllegalStateException: You need to close the Client before destroying it!
+            e.printStackTrace();
+        }
+        client=null;
+        System.gc();
+         */
     }
 
     private class AuthorizationRequestHandler implements ResultHandler{

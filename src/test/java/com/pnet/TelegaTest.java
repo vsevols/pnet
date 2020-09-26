@@ -49,6 +49,7 @@ public class TelegaTest {
 
     @AfterEach
     void tearDown() {
+        telega.destroy();
     }
 
     @Test
