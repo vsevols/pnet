@@ -44,4 +44,10 @@ public class KeyValueList<K, V> extends AbstractList<V> {
     public void put(K key, V value) {
         list.add(value);
     }
+
+    public V getByKey(K key) {
+        int i = indexOfKey(key);
+        if(i<0)return null;
+        return get(i);
+    }
 }
