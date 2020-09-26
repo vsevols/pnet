@@ -3,6 +3,7 @@ package com.pnet.telega;
 import com.pnet.ConfigService;
 import com.pnet.PNSystem;
 import it.tdlight.tdlib.TdApi;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 
 import java.io.IOException;
@@ -13,6 +14,12 @@ public class CachedUser extends TdApi.User {
     boolean exists;
     LocalDateTime lastSeen;
     LocalDateTime cachedMoment=LocalDateTime.now();
+
+    public CachedUser(){
+        exists = true;
+        lastSeen = LocalDateTime.MIN;
+    }
+
     public CachedUser(int id, LocalDateTime lastSeenNotBefore){
         exists=true;
         lastSeen = lastSeenNotBefore.isAfter(getLastSeenFromSuper())?lastSeenNotBefore:getLastSeenFromSuper();
@@ -40,7 +47,7 @@ public class CachedUser extends TdApi.User {
         return cachedMoment.plusMinutes(cacheExpiredMins).isBefore(LocalDateTime.now());
     }
 
-    public LocalDateTime getLastSeenFromSuper() {
+    private LocalDateTime getLastSeenFromSuper() {
         if(null!=status)
         {
             switch (status.getConstructor()) {

@@ -533,7 +533,7 @@ public class Telega {
         while(null==users.get(id))
             process(SYNC_TIMEOUT_MILLIS);
 
-        return users.get(id).getLastSeenFromSuper();
+        return users.get(id).getLastSeen();
     }
 
     public long searchPublicChat(String name){

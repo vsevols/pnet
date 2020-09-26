@@ -5,4 +5,5 @@ public class Debug {
     public boolean dontAddVictims;
     public boolean dontGenerateStartingMessages;
     public boolean dontReallySendMessages;
+    public boolean noGreetingMessageTimeout;
 }

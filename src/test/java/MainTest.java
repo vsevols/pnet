@@ -1,4 +1,6 @@
 import com.pnet.ConfigService;
+import static com.pnet.Debug.*;
+
 import com.pnet.Debug;
 import com.pnet.secure.Config;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
@@ -44,6 +46,7 @@ class MainTest {
     @Test
     void emptyConfigDontRealySendMessages() throws IOException, CantLoadLibrary {
         Debug.debug.dontReallySendMessages=true;
+        debug.noGreetingMessageTimeout=true;
         setTestConfig(Config.emptyConfig());
         Main.main(new String[0]);
     }

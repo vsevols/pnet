@@ -37,7 +37,7 @@ public class Router {
         while(true){
             telega.process(20000);
             processIncomingMessages();
-            if(startMoment.plusSeconds(20).isBefore(LocalDateTime.now())
+            if(startMoment.plusSeconds(Debug.debug.noGreetingMessageTimeout?0:20).isBefore(LocalDateTime.now())
                     &&!Debug.debug.dontGenerateStartingMessages)
                 checkGenerateStartingMessage();
         }
@@ -142,6 +142,7 @@ public class Router {
     }
 
     private boolean victimProcess(Victim victim, RoutingMessage msg) {
+        //TODO: Для наглядности лога: fillVictimUser(victim)
         if(victim.id==msg.getSenderUserId())
             return false;
         if(checkArchivate(victim))
@@ -187,6 +188,9 @@ public class Router {
             outgoingCount++;
         }
         int timeoutMinutes=outgoingCount*9;
+
+        if(0==outgoingCount)
+            return true;
 
         return incomingMoment.plusMinutes(timeoutMinutes).isBefore(LocalDateTime.now());
     }
