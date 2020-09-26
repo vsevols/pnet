@@ -54,7 +54,7 @@ public class Router {
         if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
             return;
         processMessage(new RoutingMessage(
-                new MessageImpl(0, true, 0, 0,  "Здрасьте"), true));
+                new MessageImpl("Здрасьте"), true));
     }
 
     private void incomingMessage(Message msg) {
@@ -71,7 +71,8 @@ public class Router {
     }
 
     private void processMessage(RoutingMessage msg) {
-        setLastSeenNow(msg.getSenderUserId()); //TODO:setLastSeenNotBefore
+        //?Не имеет смысла, т.к. на поступившее сообщение отвечаем в любом случае
+        //setUserLastSeen(msg.getSenderUserId(), msg.getLocalDateTime());
         Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
         //UPD: Возможен спам. Лучше складывать в отдельную коллекцию для ручного аппрува
@@ -93,8 +94,8 @@ public class Router {
             processMessage(msg);
     }
 
-    private void setLastSeenNow(int id) {
-        telega.setUserLastSeenNow(id);
+    private void setUserLastSeen(int id, LocalDateTime lastSeenNotBefore) {
+        telega.setUserLastSeen(id, lastSeenNotBefore);
     }
 
     private void incomingMessageArchivate(RoutingMessage msg) {
@@ -167,24 +168,27 @@ public class Router {
     private boolean isVictimSuitable(Victim victim) {
         if(!isRecentLastSeen(victim))
             return false;
-        if(isMyMonolog(victim))
+        if(!noResponseTimeout(victim))
             return false;
 
         return true;
     }
 
-    private boolean isMyMonolog(Victim victim) {
+    private boolean noResponseTimeout(Victim victim) {
         List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
-        int count=0;
+        int outgoingCount=0;
+        LocalDateTime incomingMoment=LocalDateTime.MAX;
         for (Message message:
              chatHistory) {
-            if(!message.isOutgoing())
-                return false;
-            if(MAX_MY_MONOLOG_MESSAGES<=count)
-                return true;
-            count++;
+            if(!message.isOutgoing()) {
+                incomingMoment=message.getLocalDateTime();
+                break;
+            }
+            outgoingCount++;
         }
-        return false;
+        int timeoutMinutes=outgoingCount*9;
+
+        return incomingMoment.plusMinutes(timeoutMinutes).isBefore(LocalDateTime.now());
     }
 
     private boolean isRecentLastSeen(Victim victim) {

@@ -16,4 +16,15 @@ public class MessageImpl implements Message {
     public final int senderUserId;
     public final long chatId;
     public final String text;
+    public final int date;
+
+    public MessageImpl(String здрасьте) {
+        text=здрасьте;
+
+        id = 0;
+        isOutgoing = true;
+        senderUserId = 0;
+        chatId = 0;
+        date = 0;
+    }
 }

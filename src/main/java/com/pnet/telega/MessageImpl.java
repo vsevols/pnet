@@ -36,4 +36,9 @@ public class MessageImpl implements Message {
     public String getText() {
         return ((TdApi.MessageText)message.content).text.text;
     }
+
+    @Override
+    public int getDate() {
+        return message.date;
+    }
 }

@@ -626,10 +626,12 @@ public class Telega {
         }
     }
 
-    public void setUserLastSeenNow(int id) {
+    public void setUserLastSeen(int id, LocalDateTime lastSeenNotBefore) {
         CachedUser cachedUser = users.get(id);
         if(null==cachedUser){
-            users.put(id, new CachedUser(id));
+            users.put(id, new CachedUser(id, lastSeenNotBefore));
+        }else {
+            users.put(id, CachedUser.fromUser(users.remove(id), lastSeenNotBefore));
         }
     }
 

@@ -1,26 +1,21 @@
 package com.pnet.telega;
 
 import com.pnet.ConfigService;
+import com.pnet.PNSystem;
 import it.tdlight.tdlib.TdApi;
 import lombok.Value;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.TimeZone;
 
 @Value
 public class CachedUser extends TdApi.User {
     boolean exists;
     LocalDateTime lastSeen;
     LocalDateTime cachedMoment=LocalDateTime.now();
-    CachedUser(){
+    public CachedUser(int id, LocalDateTime lastSeenNotBefore){
         exists=true;
-        lastSeen = LocalDateTime.MIN;
-    }
-    public CachedUser(int id){
-        exists=false;
-        lastSeen =LocalDateTime.now();
+        lastSeen = lastSeenNotBefore.isAfter(getLastSeenFromSuper())?lastSeenNotBefore:getLastSeenFromSuper();
     }
 
     public LocalDateTime getLastSeen() {
@@ -28,12 +23,16 @@ public class CachedUser extends TdApi.User {
     }
 
     public static CachedUser fromUser(TdApi.User user) {
+        return fromUser(user, LocalDateTime.MIN);
+    }
+
+    public static CachedUser fromUser(TdApi.User user, LocalDateTime lastSeenNotBefore) {
         try {
             //UnrecognizedPropertyException: Unrecognized field "constructor" (class it.tdlight.tdlib.TdApi$UserStatusOffline
             return ConfigService.fromJson(CachedUser.class, ConfigService.toJson(user), true);
         } catch (IOException ioException) {
             ioException.printStackTrace();
-            return new CachedUser(user.id);
+            return new CachedUser(user.id, lastSeenNotBefore);
         }
     }
 
@@ -49,12 +48,10 @@ public class CachedUser extends TdApi.User {
                 case TdApi.UserStatusRecently.CONSTRUCTOR:
                     return LocalDateTime.now();
                 case TdApi.UserStatusOffline.CONSTRUCTOR:
-                    return LocalDateTime.ofInstant(Instant.ofEpochSecond(
-                            ((TdApi.UserStatusOffline) status).wasOnline),
-                            TimeZone.getDefault().toZoneId()
-                    );
+                    return PNSystem.unixTimeToLocalDateTime(((TdApi.UserStatusOffline) status).wasOnline);
             }
         }
         return LocalDateTime.MIN;
     }
+
 }

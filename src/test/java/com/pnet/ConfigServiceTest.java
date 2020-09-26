@@ -16,7 +16,7 @@ class ConfigServiceTest {
         Config config = Config.emptyConfig();
         config.victims.put(123, new Victim(123, ""));
         config.incomingMessages.add(new RoutingMessage(
-                new com.pnet.routing.MessageImpl(0, true, 0, 0,"testText"), false));
+                new com.pnet.routing.MessageImpl("testText"), false));
         ConfigService.saveConfig(Config.toDataPath("test.json"), config);
         config = ConfigService.loadConfig(Config.toDataPath("test.json"));
         assertEquals(1, config.victims.size());
