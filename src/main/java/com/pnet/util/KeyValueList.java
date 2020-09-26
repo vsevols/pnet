@@ -22,7 +22,7 @@ public class KeyValueList<K, V> extends AbstractList<V> {
 
     private int indexOfKey(K key) {
         for (int i = 0; i < list.size(); i++) {
-            if (getKey(list.get(i)) == key)
+            if (getKey(list.get(i)).equals(key))
                 return i;
 
         }

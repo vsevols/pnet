@@ -34,7 +34,8 @@ public class Router {
 
     public void run() {
         LocalDateTime startMoment = LocalDateTime.now();
-        while(true){
+
+        while(!isStopped()){
             telega.process(20000);
             processIncomingMessages();
             if(startMoment.plusSeconds(Debug.debug.noGreetingMessageTimeout?0:20).isBefore(LocalDateTime.now())
@@ -42,6 +43,20 @@ public class Router {
                 checkGenerateStartingMessage();
         }
 
+    }
+
+    private boolean isStopped() {
+        return false;
+        /*
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(System.in));
+        try {
+            return reader.readLine().equals("stop");
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+        return false;
+         */
     }
 
     private void processIncomingMessages() {
