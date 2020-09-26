@@ -63,9 +63,7 @@ public class Telega {
         // Uncomment this line to print TDLib logs to a file
         // Log.setFilePath("logs" + File.separatorChar + "tdlib.log");
 
-        //Workaround for: Can't lock file td.binlog
-        if(null==client)
-            client = TelegaClient.create(object -> Telega.this.processResponse(object));
+        client = TelegaClient.getClient(client, object -> Telega.this.processResponse(object));
 
         // Now you can use the client
 
@@ -461,7 +459,7 @@ public class Telega {
             case TdApi.AuthorizationStateClosed.CONSTRUCTOR:
                 print("Closed");
                 if (!quiting) {
-                    client = client.create(object -> Telega.this.processResponse(object)); // recreate client after previous has closed
+                    client = TelegaClient.getClient(client, object -> Telega.this.processResponse(object)); // recreate client after previous has closed
                 }
                 break;
             default:

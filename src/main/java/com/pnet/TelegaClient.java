@@ -6,12 +6,13 @@ import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.Client;
 import it.tdlight.tdlight.Request;
 import it.tdlight.tdlight.Response;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TelegaClient extends Client {
     private final double SYNC_RECEIVE_PERIOD =1000;
-    private final ResultHandler resultHandler;
+    private ResultHandler resultHandler;
 
     public void send(TdApi.Function function) {
         super.send(new Request(function.getConstructor(), function));
@@ -33,9 +34,14 @@ public class TelegaClient extends Client {
         }while(true);
     }
 
-    public static TelegaClient create(ResultHandler resultHandler) {
-        TelegaClient client = new TelegaClient(resultHandler);
-        client.initializeClient();
+    public static TelegaClient getClient(TelegaClient client, ResultHandler resultHandler) {
+        //Singleton workaround for: Can't lock file td.binlog
+        if(null==client) {
+            client = new TelegaClient(resultHandler);
+            client.initializeClient();
+        }else
+            client.resultHandler=resultHandler;
+
         return client;
     }
 
