@@ -7,18 +7,20 @@ import it.tdlight.tdlight.Client;
 import it.tdlight.tdlight.Request;
 import it.tdlight.tdlight.Response;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @AllArgsConstructor
 public class TelegaClient extends Client {
     private final double SYNC_RECEIVE_PERIOD =1000;
-    private ResultHandler resultHandler;
+    private ReceiveHandler defaultReceiveHandler;
 
     public void send(TdApi.Function function) {
         super.send(new Request(function.getConstructor(), function));
     }
 
-    public void send(TdApi.Function function, ResultHandler resultHandler) throws TdApiException {
+    public void send(TdApi.Function function, ReceiveHandler resultHandler) throws TdApiException {
         send(function);
         if(null==resultHandler)
             return;
@@ -29,41 +31,44 @@ public class TelegaClient extends Client {
                 continue;
               //  throw new TimeoutException(function.toString());
             if (!resultHandler.onResult(response.getObject()))
-                this.resultHandler.onResult(response.getObject());
+                this.defaultReceiveHandler.onResult(response.getObject());
             else return;
         }while(true);
     }
 
-    public static TelegaClient getClient(TelegaClient client, ResultHandler resultHandler) {
+    public static TelegaClient getClient(TelegaClient client, ReceiveHandler receiveHandler) {
         //Singleton workaround for: Can't lock file td.binlog
         if(null==client) {
-            client = new TelegaClient(resultHandler);
+            client = new TelegaClient(receiveHandler);
             client.initializeClient();
         }else
-            client.resultHandler=resultHandler;
+            client.defaultReceiveHandler = receiveHandler;
 
         return client;
     }
 
-    void processUpdates(boolean canThrow) throws TdApiException {
+    void processReceive(boolean canThrow, int timeoutMs, ReceiveHandler receiveHandler) throws TdApiException {
+        LocalDateTime till = LocalDateTime.now().plusNanos(timeoutMs * 1000);
         Response response =null;
+        boolean wasReceived=false;
         do {
-            response = receive(0);
+            response = receive(wasReceived?0: ChronoUnit.NANOS.between(LocalDateTime.now(), till));
             if(null!=response) {
+                wasReceived=true;
                 try {
-                    resultHandler.onResult(response.getObject());
+                    receiveHandler.onResult(response.getObject());
                 } catch (TdApiException e) {
                     if(canThrow)
                         throw e;
                     e.printStackTrace();
                 }
             }
-        }while(null!=response);
+        }while(null!=response||(!wasReceived&&till.isAfter(LocalDateTime.now())));
     }
 
-    public void processUpdates() {
+    public void processReceive(int timeOutMs, ReceiveHandler receiveHandler) {
         try {
-            processUpdates(true);
+            processReceive(true, timeOutMs, receiveHandler);
         } catch (TdApiException e) {
             e.printStackTrace();
         }
@@ -79,5 +84,9 @@ public class TelegaClient extends Client {
         });
 
         return (T) result[0];
+    }
+
+    public void processUpdates(int timeOutMs) {
+        processReceive(timeOutMs, defaultReceiveHandler);
     }
 }

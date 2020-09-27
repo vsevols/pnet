@@ -1,11 +1,11 @@
 package com.pnet.telega;
 
-import com.pnet.ResultHandler;
+import com.pnet.ReceiveHandler;
 import it.tdlight.tdlib.TdApi;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class TypedResultHandler<T extends TdApi.Object> implements ResultHandler {
+public abstract class TypedResultHandler<T extends TdApi.Object> implements ReceiveHandler {
     private final T typeByObject;
 
     @Override

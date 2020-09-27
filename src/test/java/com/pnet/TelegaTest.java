@@ -10,6 +10,8 @@ import org.junit.jupiter.api.*;
 
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+
 public class TelegaTest {
     Telega telega;
 
@@ -61,11 +63,10 @@ public class TelegaTest {
         Assertions.assertNotEquals(0, telega.getSupergroupMembers("SoVulgarChat").size()>200);
     }
 
-    @Disabled("Broken")
     @Test
-    void getChatHistory() throws TdApiException {
-        int id = telega.userIdByPhone(Config.TEST_PHONE);
-        List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10);
+    void getChatHistory() throws Exception {
+        int id = telega.getMe();
+        List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10, true);
         //TODO: BROKEN: Если выполнять без задержек_при_трассировке:
         // AssertionFailedError: expected: not equal but was: <0>
         Assertions.assertNotEquals(0, chatHistory.size());

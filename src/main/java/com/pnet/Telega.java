@@ -6,7 +6,6 @@ import com.pnet.telega.*;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
-import jdk.vm.ci.meta.Local;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -28,7 +26,7 @@ import static java.lang.Thread.sleep;
  *
  */
 public class Telega {
-    private static final long SYNC_TIMEOUT_MILLIS = 1000;
+    private static final int SYNC_TIMEOUT_MS = 1000;
     public OnMessageHandler onMessage;
     private static TelegaClient client;
     private static boolean haveAuthorization;
@@ -70,20 +68,15 @@ public class Telega {
         // Now you can use the client
 
         while (!haveAuthorization) {
-            client.processUpdates();
+            client.processUpdates(1000);
         }
 
     }
 
     private void createPrivateChat(int userId) throws TdApiException {
-        client.send(new TdApi.CreatePrivateChat(userId, true), object->{
-            switch (object.getConstructor()) {
-                case TdApi.UpdateNewChat.CONSTRUCTOR:
-                    return true;
-            }
-            new ErrorProcess(object);
-            return false;
-        });
+        client.send(new TdApi.CreatePrivateChat(userId, true));
+        while(!chats.containsKey(userId))
+            client.processUpdates(Integer.MAX_VALUE);
     }
 
 
@@ -93,7 +86,7 @@ public class Telega {
         TdApi.Contact[] contacts = new TdApi.Contact[]{
                 new TdApi.Contact(phone, "", "", null, 0)
         };
-            client.send(new TdApi.ImportContacts(contacts), new ResultHandler() {
+            client.send(new TdApi.ImportContacts(contacts), new ReceiveHandler() {
                 @Override
                 public boolean onResult(TdApi.Object object) {
                     switch (object.getConstructor()) {
@@ -126,7 +119,7 @@ public class Telega {
         TdApi.Contact[] contacts = new TdApi.Contact[]{
                 new TdApi.Contact(null, "", "", null, userId)
         };
-        client.send(new TdApi.ImportContacts(contacts), new ResultHandler() {
+        client.send(new TdApi.ImportContacts(contacts), new ReceiveHandler() {
             @Override
             public boolean onResult(TdApi.Object object) {
                 switch (object.getConstructor()) {
@@ -173,6 +166,10 @@ public class Telega {
             case TdApi.UpdateUserStatus.CONSTRUCTOR:  {
                 TdApi.UpdateUserStatus updateUserStatus = (TdApi.UpdateUserStatus) object;
                 user = users.get(updateUserStatus.userId);
+                if(null==user){
+                    users.put(updateUserStatus.userId, new CachedUser(
+                            updateUserStatus.userId, LocalDateTime.MIN));
+                }
                 synchronized (user) {
                     user.status = updateUserStatus.status;
                 }
@@ -513,10 +510,8 @@ public class Telega {
         internalSendMessage(userId, message);
     }
 
-    public void process(long millis) {
-        LocalDateTime till = LocalDateTime.now().plusNanos(millis * 1000);
-        while(till.isAfter(LocalDateTime.now()))
-            client.processUpdates();
+    public void process(int milliSeconds) {
+        client.processUpdates(milliSeconds);
     }
 
     public LocalDateTime getUserLastSeen(int id, String superGroupName, int cacheExpiredMins) throws Exception {
@@ -533,7 +528,7 @@ public class Telega {
         }
 
         if (null==users.get(id))
-            process(SYNC_TIMEOUT_MILLIS);
+            process(SYNC_TIMEOUT_MS);
 
         if (null==users.get(id))
             return LocalDateTime.MIN;
@@ -544,7 +539,7 @@ public class Telega {
     public long searchPublicChat(String name){
         final long[] id = new long[1];
         try {
-            client.send(new TdApi.SearchPublicChat(name), new ResultHandler() {
+            client.send(new TdApi.SearchPublicChat(name), new ReceiveHandler() {
                 @Override
                 public boolean onResult(TdApi.Object object) throws TdApiException {
                     switch (object.getConstructor()){
@@ -599,10 +594,23 @@ public class Telega {
         return result;
     }
 
-    public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit) {
+    public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit, boolean userJustQueriedSleep) {
         TdApi.Messages result;
         try {
             createPrivateChat(userId);
+
+            //После получения TdApi.User:
+            //При задержке <= 200 следующий вызов возвращает пустой массив
+            //При задержке 400 иногда тоже
+            if(userJustQueriedSleep) {
+                try {
+                    sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                }
+            }
+
             result = client.syncRequest(
                     new TdApi.GetChatHistory(userId, fromMessageId, offset, limit, true), new TdApi.Messages());
         } catch (TdApiException e) {
@@ -640,7 +648,7 @@ public class Telega {
         }
     }
 
-    private class AuthorizationRequestHandler implements ResultHandler{
+    private class AuthorizationRequestHandler implements ReceiveHandler {
         @Override
         public boolean onResult(TdApi.Object object) {
             return false;

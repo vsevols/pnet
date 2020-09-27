@@ -12,6 +12,7 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 class MainTest {
 
@@ -27,9 +28,9 @@ class MainTest {
 
     @Disabled //test for debug
     @Test
-    void mainIncomingMessageEmulate() throws IOException, CantLoadLibrary {
+    void mainIncomingMessageEmulateDontRealySendMessages() throws IOException, CantLoadLibrary {
         setTestConfig("mainIncomingMessageEmulate.json");
-        Debug.debug.dontAddVictims=true;
+        Debug.debug.dontReallySendMessages=true;
         Main.main(new String[0]);
     }
 
@@ -69,5 +70,11 @@ class MainTest {
 
     private String getLocalTestsDataPath(String path) {
         return Config.toDataPath("tests/"+path);
+    }
+
+    @Disabled
+    @Test
+    public void scratch(){
+        LocalDateTime till = LocalDateTime.now().plusNanos(new Long(Integer.MAX_VALUE) * 1000);
     }
 }

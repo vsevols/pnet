@@ -87,11 +87,15 @@ public class Router {
 
     private void processMessage(RoutingMessage msg) {
         //?Не имеет смысла, т.к. на поступившее сообщение отвечаем в любом случае
+        //UPD: не в любом, -по стандартному алгоритму, чтобы не тратить живые сообщения
+        //TODO: инициализировать дату кеш-элемента датой сообщения, протестировать
         //setUserLastSeen(msg.getSenderUserId(), msg.getLocalDateTime());
+
         Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
         //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
         //UPD: Возможен спам. Лучше складывать в отдельную коллекцию для ручного аппрува
 
+        //TODO: (?) Переместить в com.pnet.Router.incomingMessage
         if (null!=victim){
             config.victims.moveToFirst(victim.id);
             save();
@@ -202,7 +206,7 @@ public class Router {
     }
 
     private boolean noResponseTimeout(Victim victim, RoutingMessage msg) {
-        List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
+        List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES, false);
 
         if(msg.isGreeting()&&chatHistory.size()>0)
             return false;
