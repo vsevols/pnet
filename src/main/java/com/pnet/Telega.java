@@ -51,6 +51,7 @@ public class Telega {
     private volatile String currentPrompt = null;
     private volatile boolean quiting = false;
     private static final String newLine = System.getProperty("line.separator");
+    private final int WAIT_FOR_UPDATE_INTERVAL=1000;
 
     public void init() throws CantLoadLibrary {
 
@@ -75,8 +76,9 @@ public class Telega {
 
     private void createPrivateChat(int userId) throws TdApiException {
         client.send(new TdApi.CreatePrivateChat(userId, true));
-        while(!chats.containsKey(userId))
-            client.processUpdates(Integer.MAX_VALUE);
+        while(!chats.containsKey(userId)) {
+            client.processUpdates(WAIT_FOR_UPDATE_INTERVAL);
+        }
     }
 
 

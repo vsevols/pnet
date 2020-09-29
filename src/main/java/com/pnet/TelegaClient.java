@@ -48,11 +48,12 @@ public class TelegaClient extends Client {
     }
 
     void processReceive(boolean canThrow, int timeoutMs, ReceiveHandler receiveHandler) throws TdApiException {
-        LocalDateTime till = LocalDateTime.now().plusNanos(timeoutMs * 1000);
+        LocalDateTime till = LocalDateTime.now().plusNanos(new Long(timeoutMs) * 1000000);
         Response response =null;
         boolean wasReceived=false;
         do {
-            response = receive(wasReceived?0: ChronoUnit.NANOS.between(LocalDateTime.now(), till));
+            long between = ChronoUnit.MILLIS.between(LocalDateTime.now(), till);
+            response = receive(wasReceived?0: between>0?between:0);
             if(null!=response) {
                 wasReceived=true;
                 try {
