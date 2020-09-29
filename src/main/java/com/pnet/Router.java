@@ -45,17 +45,15 @@ public class Router {
     }
 
     private boolean isStopped() {
-        return false;
-        /*
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(System.in));
         try {
-            return reader.readLine().equals("stop");
+            if(reader.ready())
+                return reader.readLine().equals("stop");
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
         return false;
-         */
     }
 
     private void processIncomingMessages() {

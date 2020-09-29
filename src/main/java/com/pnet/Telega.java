@@ -159,17 +159,17 @@ public class Telega {
                 break;
             case TdApi.User.CONSTRUCTOR:
                 TdApi.User user = (TdApi.User)object;
-                users.put(user.id, CachedUser.fromUser(user));
+                cacheUser(CachedUser.fromUser(user));
                 break;
             case TdApi.UpdateUser.CONSTRUCTOR:
                 TdApi.UpdateUser updateUser = (TdApi.UpdateUser) object;
-                users.put(updateUser.user.id, CachedUser.fromUser(updateUser.user));
+                cacheUser(CachedUser.fromUser(updateUser.user));
                 break;
             case TdApi.UpdateUserStatus.CONSTRUCTOR:  {
                 TdApi.UpdateUserStatus updateUserStatus = (TdApi.UpdateUserStatus) object;
                 user = users.get(updateUserStatus.userId);
                 if(null==user){
-                    users.put(updateUserStatus.userId, new CachedUser(
+                    cacheUser(new CachedUser(
                             updateUserStatus.userId, LocalDateTime.MIN));
                 }
                 synchronized (user) {
@@ -389,6 +389,12 @@ public class Telega {
         return true;
     }
 
+    private void cacheUser(CachedUser user) {
+        //if(users.containsKey(user.id))
+          //  users.remove(user.id);
+        users.put(user.id, user);
+    }
+
     private void onAuthorizationStateUpdated(TdApi.AuthorizationState authorizationState) throws TimeoutException, TdApiException {
         if (authorizationState != null) {
             this.authorizationState = authorizationState;
@@ -516,30 +522,47 @@ public class Telega {
         internalSendMessage(userId, message);
     }
 
-    public void process(int milliSeconds) {
-        client.processUpdates(milliSeconds);
+    public boolean process(int milliSeconds) {
+        return client.processUpdates(milliSeconds);
     }
 
     public LocalDateTime getUserLastSeen(int id, String superGroupName, int cacheExpiredMins) throws Exception {
         if(null==users.get(id)){
             if(!"".equals(superGroupName))
                 getSupergroupMembers(superGroupName);
-            else
-                if (getMe()==id)
-                    return getUserLastSeen(id, superGroupName, cacheExpiredMins);
-                else throw new NoSuchElementException(String.valueOf(id));
+            else {
+                try {
+                    getUser(id);
+                } catch (TdApiException e) {
+                    throw new Exception(e);
+                }
+            }
         }else if(users.get(id).isExpired(cacheExpiredMins)){
-            users.remove(users.get(id));
+            users.remove(users.get(id).id);
+            try {
+                getUser(id);
+            } catch (TdApiException e) {
+                throw new Exception(e);
+            }
             return getUserLastSeen(id, superGroupName, cacheExpiredMins);
         }
 
-        if (null==users.get(id))
-            process(SYNC_TIMEOUT_MS);
+
+        while((null==users.get(id))&&process(SYNC_TIMEOUT_MS));
 
         if (null==users.get(id))
             return LocalDateTime.MIN;
 
         return users.get(id).getLastSeen();
+    }
+
+    private TdApi.User getUser(int id) throws TdApiException {
+        TdApi.User user=users.get(new Integer(id));
+        if (null!=user)
+            return user;
+        user = client.syncRequest(new TdApi.GetUser(id), new TdApi.User());
+        cacheUser(CachedUser.fromUser(user));
+        return user;
     }
 
     public long searchPublicChat(String name){
@@ -638,19 +661,36 @@ public class Telega {
     }
 
     public int getMe() throws Exception {
+        final int[] id = new int[1];
         try {
-            return client.syncRequest(new TdApi.GetMe(), new TdApi.UpdateUser()).user.id;
+            client.send(new TdApi.GetMe(), new ReceiveHandler() {
+                @Override
+                public boolean onResult(TdApi.Object object) throws TdApiException {
+                    switch (object.getConstructor()){
+                        case TdApi.UpdateUser.CONSTRUCTOR:{
+                            id[0] =((TdApi.UpdateUser)object).user.id;
+                            return true;
+                        }
+                        case TdApi.User.CONSTRUCTOR:{
+                            id[0] =((TdApi.User)object).id;
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
         } catch (TdApiException e) {
             throw new Exception(e);
         }
+        return id[0];
     }
 
     public void setUserLastSeen(int id, LocalDateTime lastSeenNotBefore) {
         CachedUser cachedUser = users.get(id);
         if(null==cachedUser){
-            users.put(id, new CachedUser(id, lastSeenNotBefore));
+            cacheUser(new CachedUser(id, lastSeenNotBefore));
         }else {
-            users.put(id, CachedUser.fromUser(users.remove(id), lastSeenNotBefore));
+            cacheUser(CachedUser.fromUser(users.remove(id), lastSeenNotBefore));
         }
     }
 

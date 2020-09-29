@@ -3,6 +3,7 @@ import static com.pnet.Debug.*;
 
 import com.pnet.Debug;
 import com.pnet.secure.Config;
+import com.pnet.telega.CachedUser;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,8 @@ import org.springframework.util.FileCopyUtils;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 class MainTest {
 
@@ -75,6 +78,14 @@ class MainTest {
     @Disabled
     @Test
     public void scratch(){
-        LocalDateTime till = LocalDateTime.now().plusNanos(new Long(Integer.MAX_VALUE) * 1000);
+        ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<Integer, Integer>();
+        map.put(1,1);
+        map.put(1,2);
+        map.put(1,3);
+        int i = map.get(1);
+        map.put(new Integer (1), 1);
+        map.put(new Integer (1), 2);
+        map.put(new Integer (1), 3);
+        i=map.get(1);
     }
 }

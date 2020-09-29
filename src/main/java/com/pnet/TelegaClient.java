@@ -47,7 +47,7 @@ public class TelegaClient extends Client {
         return client;
     }
 
-    void processReceive(boolean canThrow, int timeoutMs, ReceiveHandler receiveHandler) throws TdApiException {
+    boolean processReceive(boolean canThrow, int timeoutMs, ReceiveHandler receiveHandler) throws TdApiException {
         LocalDateTime till = LocalDateTime.now().plusNanos(new Long(timeoutMs) * 1000000);
         Response response =null;
         boolean wasReceived=false;
@@ -67,13 +67,16 @@ public class TelegaClient extends Client {
                 }
             }
         }while(null!=response||(!wasReceived&&till.isAfter(LocalDateTime.now())));
+
+        return wasReceived;
     }
 
-    public void processReceive(int timeOutMs, ReceiveHandler receiveHandler) {
+    public boolean processReceive(int timeOutMs, ReceiveHandler receiveHandler) {
         try {
-            processReceive(true, timeOutMs, receiveHandler);
+            return processReceive(true, timeOutMs, receiveHandler);
         } catch (TdApiException e) {
             e.printStackTrace();
+            return true;
         }
     }
 
@@ -89,7 +92,7 @@ public class TelegaClient extends Client {
         return (T) result[0];
     }
 
-    public void processUpdates(int timeOutMs) {
-        processReceive(timeOutMs, defaultReceiveHandler);
+    public boolean processUpdates(int timeOutMs) {
+        return processReceive(timeOutMs, defaultReceiveHandler);
     }
 }
