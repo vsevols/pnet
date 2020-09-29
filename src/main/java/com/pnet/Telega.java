@@ -51,7 +51,7 @@ public class Telega {
     private volatile String currentPrompt = null;
     private volatile boolean quiting = false;
     private static final String newLine = System.getProperty("line.separator");
-    private final int WAIT_FOR_UPDATE_INTERVAL_MS = 5000;
+    private final int WAIT_FOR_UPDATE_INTERVAL_MS = 1000;
 
     public void init() throws CantLoadLibrary {
 
@@ -76,7 +76,7 @@ public class Telega {
 
     private void createPrivateChat(int userId) throws TdApiException {
         client.send(new TdApi.CreatePrivateChat(userId, true));
-        while(!chats.containsKey(userId)) {
+        while(!chats.containsKey(new Long(userId))) {
             client.processUpdates(WAIT_FOR_UPDATE_INTERVAL_MS);
         }
     }
@@ -189,7 +189,11 @@ public class Telega {
                 TdApi.UpdateSecretChat updateSecretChat = (TdApi.UpdateSecretChat) object;
                 secretChats.put(updateSecretChat.secretChat.id, updateSecretChat.secretChat);
                 break;
-
+            case TdApi.Chat.CONSTRUCTOR:{
+                TdApi.Chat chat = (TdApi.Chat) object;
+                chats.put(chat.id, chat);
+                break;
+            }
             case TdApi.UpdateNewChat.CONSTRUCTOR: {
                 TdApi.UpdateNewChat updateNewChat = (TdApi.UpdateNewChat) object;
                 WrappedChat chat = new WrappedChat(updateNewChat.chat);
