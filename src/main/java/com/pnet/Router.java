@@ -27,7 +27,7 @@ public class Router {
         load();
         telega = new Telega();
         telega.init();
-        telega.onMessage = msg -> incomingMessage(msg);
+        telega.onMessage = msg -> messageRegister(msg);
     }
 
 
@@ -69,9 +69,11 @@ public class Router {
                 new MessageImpl("Здрасьте"), true));
     }
 
-    private void incomingMessage(Message msg) {
+    private void messageRegister(Message msg) {
         //Отфильтруем конференции
         if(msg.getSenderUserId()!=msg.getChatId())
+            return;
+        if(msg.isOutgoing())
             return;
 
         try {
@@ -97,7 +99,10 @@ public class Router {
             config.victims.moveToFirst(victim.id);
             config.lastIncomingMessageMoment=LocalDateTime.now();
             save();
-        }else return;
+        }else if (!msg.isGreeting()){
+            config.incomingMessages.remove(msg);
+            return;
+        }
 
         for (int i = 0; i < config.victims.size(); i++) {
             victim=config.victims.get(i);
@@ -116,6 +121,9 @@ public class Router {
     }
 
     private void incomingMessageArchivate(RoutingMessage msg) {
+        if(msg.isGreeting())
+            return;
+
         int i = config.incomingMessages.indexOf(msg);
         if(i<0)
             throw new NoSuchElementException();
