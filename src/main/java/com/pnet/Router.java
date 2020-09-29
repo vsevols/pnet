@@ -97,6 +97,7 @@ public class Router {
         //TODO: (?) Переместить в com.pnet.Router.incomingMessage
         if (null!=victim){
             config.victims.moveToFirst(victim.id);
+            config.lastIncomingMessageMoment=LocalDateTime.now();
             save();
         }else return;
 

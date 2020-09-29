@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pnet.secure.Config;
 import lombok.Setter;
 
@@ -80,6 +81,8 @@ public class ConfigService {
         mapper.enableDefaultTyping();
         mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, !ignoreUnknownProperties);
+        //https://stackoverflow.com/questions/45863678/json-parse-error-can-not-construct-instance-of-java-time-localdate-no-string-a
+        mapper.registerModule(new JavaTimeModule());
         return mapper.readValue(json, clazz);
     }
 
@@ -87,6 +90,7 @@ public class ConfigService {
         ObjectMapper objectMapper = new ObjectMapper();
         //https://www.baeldung.com/jackson-inheritance
         objectMapper.enableDefaultTyping();
+        objectMapper.registerModule(new JavaTimeModule());
         ObjectWriter ow = objectMapper.writer().withDefaultPrettyPrinter();
         return ow.writeValueAsString(obj);
     }
