@@ -21,7 +21,6 @@ public class Router {
     public static final int USER_CACHE_EXPIRED_MINUTES = 10;
     public static final int MAX_MINUTES_RECENT_SEEN = USER_CACHE_EXPIRED_MINUTES*2;
     private Telega telega;
-    private LocalDateTime lastMessageMoment = LocalDateTime.now().minusDays(1);
     private Config config;
 
     public void Init() throws CantLoadLibrary, IOException {
@@ -66,7 +65,7 @@ public class Router {
     }
 
     private void checkGenerateStartingMessage() {
-        if(LocalDateTime.now().minusMinutes(3).isBefore(lastMessageMoment))
+        if(LocalDateTime.now().minusMinutes(3).isAfter(config.lastIncomingMessageMoment))
             return;
         processMessage(new RoutingMessage(
                 new MessageImpl("Здрасьте"), true));

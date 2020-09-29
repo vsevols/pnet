@@ -67,8 +67,6 @@ public class TelegaTest {
     void getChatHistory() throws Exception {
         int id = telega.getMe();
         List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10, true);
-        //TODO: BROKEN: Если выполнять без задержек_при_трассировке:
-        // AssertionFailedError: expected: not equal but was: <0>
         Assertions.assertNotEquals(0, chatHistory.size());
     }
 
