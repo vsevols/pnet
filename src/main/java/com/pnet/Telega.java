@@ -751,8 +751,9 @@ public class Telega {
                     new TdApi.ForwardMessages(
                             chatId, msg.getChatId(),
                         new long[Math.toIntExact(msg.getId())],
-                        new TdApi.MessageSendOptions(false, false, null),
-                        false, false, false),
+                        new TdApi.MessageSendOptions(false, true,
+                                new TdApi.MessageSchedulingStateSendAtDate(0)),
+                        false, true, false),
                     new TdApi.Messages());
         } catch (TdApiException e) {
             e.printStackTrace();

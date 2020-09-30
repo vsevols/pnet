@@ -85,10 +85,13 @@ public class TelegaTest {
 
     @Disabled
     @Test
-    void forwardMessage() throws IOException {
+    void forwardMessage() throws Exception, TdApiException {
+        Debug.debug.dontInjectBackupedMessages=true;
         MessageImpl message= PersistentDataService.loadObject(
                 getLocalTestsDataPath(getClass().getTypeName()+"#forwardMessage"),
                 MessageImpl.class, true);
+        telega.getUserInterface(message.getSenderUserId(), Config.TEST_CHAT_NAME);
+        telega.getChatHistory(message.getSenderUserId(), message.getId(), 0, 1, true);
         telega.forwardMessage(message, Config.TEST_OUTBOUND_CHAT_ID);
     }
 }
