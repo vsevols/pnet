@@ -1,10 +1,12 @@
 package com.pnet;
 
 import com.pnet.abstractions.Message;
+import com.pnet.abstractions.User;
 import com.pnet.routing.MessageImpl;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
+import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
 import java.io.*;
@@ -181,7 +183,14 @@ public class Router {
         }
 
         try {
-            Logger.getGlobal().info(String.format("Reproducing message:\n%s \nto:\n %s ", msg, victim));
+            User user=null;
+            try {
+                user=telega.getUserInterface(victim.id, victim.groupName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Logger.getGlobal().info(String.format("Reproducing message:\n%s\nto victim:\n%s\nuser:\n%s",
+                    msg, victim, user));
             if(!Debug.debug.dontReallySendMessages)
                 telega.sendMessage(victim.id, msg.getText());
             msg.setReproducedCount(msg.getReproducedCount()+1);

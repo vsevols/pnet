@@ -2,6 +2,7 @@ package com.pnet;
 
 import com.pnet.abstractions.Chat;
 import com.pnet.abstractions.Message;
+import com.pnet.abstractions.User;
 import com.pnet.telega.*;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
@@ -706,6 +707,11 @@ public class Telega {
         TdApi.User user = discoverUser(id, superGroupName);
         return (user.type.getConstructor()==TdApi.UserTypeRegular.CONSTRUCTOR)
                 &&!user.isScam;
+    }
+
+    public User getUserInterface(int id, String superGroupName) throws Exception {
+        TdApi.User user = discoverUser(id, superGroupName);
+        return new UserImpl(user);
     }
 
     private class AuthorizationRequestHandler implements ReceiveHandler {
