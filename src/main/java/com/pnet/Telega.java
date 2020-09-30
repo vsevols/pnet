@@ -175,8 +175,10 @@ public class Telega {
                 TdApi.UpdateUserStatus updateUserStatus = (TdApi.UpdateUserStatus) object;
                 user = users.get(updateUserStatus.userId);
                 if(null==user){
-                    cacheUser(new CachedUser(
-                            updateUserStatus.userId, LocalDateTime.MIN));
+                    CachedUser user1 = new CachedUser(
+                            updateUserStatus.userId, LocalDateTime.MIN);
+                    cacheUser(user1);
+                    user=user1;
                 }
                 synchronized (user) {
                     user.status = updateUserStatus.status;
@@ -545,6 +547,9 @@ public class Telega {
     }
 
     private void incomingMessagesBackupProcess() {
+        if(Debug.debug.dontInjectBackupedMessages)
+            return;
+
         while (true) {
             TdApi.Message peek = incomingMessagesBackup.peek();
             if (null==peek) break;
