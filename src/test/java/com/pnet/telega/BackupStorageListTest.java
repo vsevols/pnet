@@ -6,6 +6,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
+
 import static com.pnet.TestingUtils.getLocalTestsDataPath;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,8 +17,11 @@ class BackupStorageListTest {
     private BackupStorageList<TdApi.Message> storage;
 
     @BeforeEach
-    void setUp() {
-        storage = new BackupStorageList<TdApi.Message>(getLocalTestsDataPath(getClass().getTypeName()));
+    void setUp() throws IOException {
+        String path = getLocalTestsDataPath(getClass().getTypeName());
+        new File(path).delete();
+        storage = new BackupStorageList<TdApi.Message>(path);
+        storage.load();
     }
 
     @AfterEach
@@ -23,7 +29,7 @@ class BackupStorageListTest {
     }
 
     @Test
-    void add_load_peek() {
+    void add_load_peek() throws IOException {
         storage.add(new TdApi.Message());
         storage = new BackupStorageList<TdApi.Message>(storage.getPath());
         storage.load();

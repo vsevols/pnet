@@ -55,7 +55,7 @@ public class Telega {
     private final int WAIT_FOR_UPDATE_INTERVAL_MS = 1000;
     private BackupStorageList<TdApi.Message> incomingMessagesBackup;
 
-    public void init() throws CantLoadLibrary {
+    public void init() throws CantLoadLibrary, IOException {
 
         // Initialize TDLight native libraries
         Init.start();

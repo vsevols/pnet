@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.*;
 
+import java.io.IOException;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
@@ -45,7 +46,7 @@ public class TelegaTest {
     }
 
     @BeforeEach
-    public void setUp() throws CantLoadLibrary {
+    public void setUp() throws CantLoadLibrary, IOException {
         telega = new Telega();
         telega.init();
     }

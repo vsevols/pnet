@@ -1,7 +1,7 @@
 package com.pnet.telega;
 
-import com.pnet.ConfigService;
 import com.pnet.util.PNSystem;
+import com.pnet.util.PersistentDataService;
 import it.tdlight.tdlib.TdApi;
 import lombok.Value;
 
@@ -35,7 +35,7 @@ public class CachedUser extends TdApi.User {
     public static CachedUser fromUser(TdApi.User user, LocalDateTime lastSeenNotBefore) {
         try {
             //UnrecognizedPropertyException: Unrecognized field "constructor" (class it.tdlight.tdlib.TdApi$UserStatusOffline
-            return ConfigService.fromJson(CachedUser.class, ConfigService.toJson(user), true);
+            return PersistentDataService.fromJson(CachedUser.class, PersistentDataService.toJson(user), true);
         } catch (IOException ioException) {
             ioException.printStackTrace();
             return new CachedUser(user.id, lastSeenNotBefore);

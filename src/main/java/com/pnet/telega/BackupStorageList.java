@@ -4,6 +4,7 @@ import com.pnet.util.PersistentDataService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 //TODO: load, save on operations, inject messages
@@ -13,12 +14,21 @@ public class BackupStorageList<T> {
     private final String path;
     private ArrayList<T> list;
 
-    public void load() {
-        list = PersistentDataService.loadObject(path, list.getClass());
+    public void load() throws IOException {
+        ListHolder arrayListListHolder = new ListHolder();
+        if(PersistentDataService.resourceExists(path)) {
+            arrayListListHolder = PersistentDataService.loadObject(path, arrayListListHolder.getClass());
+            list = arrayListListHolder.list;
+        }else
+            list = new ArrayList<>();
     }
 
     private void save() {
-        PersistentDataService.saveObject(path, list);
+        try {
+            PersistentDataService.saveObject(path, list);
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
     }
 
     public boolean add(T t) {
@@ -40,5 +50,9 @@ public class BackupStorageList<T> {
         if(list.size()>0)
             return list.get(0);
         return null;
+    }
+
+    private class ListHolder {
+        public ArrayList<T> list;
     }
 }
