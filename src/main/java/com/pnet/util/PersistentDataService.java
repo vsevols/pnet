@@ -13,8 +13,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class PersistentDataService {
-    public static <T> T loadObject(String path, Class<T> aClass) throws IOException {
-        return ReadJsonFile(aClass, path);
+    public static <T> T loadObject(String path, Class<T> aClass, boolean ignoreUnknownProperties) throws IOException {
+        return ReadJsonFile(aClass, path, ignoreUnknownProperties);
     }
 
     public static <T> void saveObject(String path, Object o) throws IOException {
@@ -22,7 +22,11 @@ public class PersistentDataService {
     }
 
     public static <T> T ReadJsonFile(Class<T> clazz, String path) throws IOException {
-        return fromJson(clazz, ReadFile(path));
+        return ReadJsonFile(clazz, path, false);
+    }
+
+        public static <T> T ReadJsonFile(Class<T> clazz, String path, boolean ignoreUnknownProperties) throws IOException {
+        return fromJson(clazz, ReadFile(path), ignoreUnknownProperties);
     }
 
     private static String ReadFile(String path) throws IOException {

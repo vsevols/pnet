@@ -12,21 +12,24 @@ public class BackupStorageList<T> {
     @Getter
     private final String path;
     private ArrayList<T> list;
+    private final boolean ignoreUnknownProperties;
 
     public void load() throws IOException {
-        ListHolder arrayListListHolder = new ListHolder();
+        PersistentImage arrayListPersistentImage = new PersistentImage();
         if(PersistentDataService.resourceExists(path)) {
-            arrayListListHolder = PersistentDataService.loadObject(path, arrayListListHolder.getClass());
-            list = arrayListListHolder.list;
+            list=PersistentDataService.loadObject(path, new ArrayList<>().getClass(),
+                    ignoreUnknownProperties);
+            //arrayListPersistentImage = PersistentDataService.loadObject(path, arrayListPersistentImage.getClass());
+            //list = arrayListPersistentImage.list;
         }else
             list = new ArrayList<>();
     }
 
     private void save() {
         try {
-            ListHolder o = new ListHolder();
+            PersistentImage o = new PersistentImage();
             o.list=list;
-            PersistentDataService.saveObject(path, o);
+            PersistentDataService.saveObject(path, list);
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
@@ -56,7 +59,7 @@ public class BackupStorageList<T> {
     //@AllArgsConstructor
     @NoArgsConstructor
     @Data
-    public class ListHolder {
+    public class PersistentImage {
         public ArrayList<T> list;
     }
 }

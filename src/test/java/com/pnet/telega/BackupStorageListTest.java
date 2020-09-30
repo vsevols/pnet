@@ -20,7 +20,7 @@ class BackupStorageListTest {
     void setUp() throws IOException {
         String path = getLocalTestsDataPath(getClass().getTypeName());
         new File(path).delete();
-        storage = new BackupStorageList<TdApi.Message>(path);
+        storage = new BackupStorageList<TdApi.Message>(path, true);
         storage.load();
     }
 
@@ -31,7 +31,7 @@ class BackupStorageListTest {
     @Test
     void add_load_peek() throws IOException {
         storage.add(new TdApi.Message());
-        storage = new BackupStorageList<TdApi.Message>(storage.getPath());
+        storage = new BackupStorageList<TdApi.Message>(storage.getPath(), true);
         storage.load();
         assertNotEquals(null, storage.peek());
     }

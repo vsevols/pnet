@@ -70,7 +70,8 @@ public class Telega {
 
         // Now you can use the client
 
-        incomingMessagesBackup=new BackupStorageList<>(Config.toDataPath("telegaIncomingMessagesBackup.json"));
+        incomingMessagesBackup=new BackupStorageList<>(
+                Config.toDataPath("telegaIncomingMessagesBackup.json"), true);
         incomingMessagesBackup.load();
 
         while (!haveAuthorization) {
