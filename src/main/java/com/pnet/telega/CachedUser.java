@@ -1,9 +1,8 @@
 package com.pnet.telega;
 
 import com.pnet.ConfigService;
-import com.pnet.PNSystem;
+import com.pnet.util.PNSystem;
 import it.tdlight.tdlib.TdApi;
-import lombok.NoArgsConstructor;
 import lombok.Value;
 
 import java.io.IOException;

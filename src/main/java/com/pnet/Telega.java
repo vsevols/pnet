@@ -2,6 +2,7 @@ package com.pnet;
 
 import com.pnet.abstractions.Chat;
 import com.pnet.abstractions.Message;
+import com.pnet.secure.Config;
 import com.pnet.telega.*;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
@@ -52,6 +53,7 @@ public class Telega {
     private volatile boolean quiting = false;
     private static final String newLine = System.getProperty("line.separator");
     private final int WAIT_FOR_UPDATE_INTERVAL_MS = 1000;
+    private BackupStorageList<TdApi.Message> incomingMessagesBackup;
 
     public void init() throws CantLoadLibrary {
 
@@ -67,6 +69,9 @@ public class Telega {
         client = TelegaClient.getClient(client, object -> Telega.this.processResponse(object));
 
         // Now you can use the client
+
+        incomingMessagesBackup=new BackupStorageList<>(Config.toDataPath("telegaIncomingMessagesBackup.json"));
+        incomingMessagesBackup.load();
 
         while (!haveAuthorization) {
             client.processUpdates(1000);
@@ -372,10 +377,10 @@ public class Telega {
                 print(object.toString());
                 break;
             case TdApi.Message.CONSTRUCTOR:
-                onMessage.onMessage(new MessageImpl((TdApi.Message) object));
+                incomingMessageProcess((TdApi.Message) object, true);
                 break;
             case TdApi.UpdateNewMessage.CONSTRUCTOR:
-                onMessage.onMessage(new MessageImpl(((TdApi.UpdateNewMessage)object).message));
+                incomingMessageProcess(((TdApi.UpdateNewMessage)object).message, true);
                 break;
                 /*
             case TdApi.Error.CONSTRUCTOR:
@@ -387,6 +392,17 @@ public class Telega {
                 return false;
         }
         return true;
+    }
+
+    /**TODO: Вынести в onMessage, сделать обработчик обязательным, в т.ч. для тестов
+     */
+    private void incomingMessageProcess(TdApi.Message msg, boolean addToBackup) {
+        if(addToBackup)
+            incomingMessagesBackup.add(msg);
+
+        if(null!=onMessage)
+            if(onMessage.onMessage(new MessageImpl(msg)))
+                incomingMessagesBackup.remove(msg);
     }
 
     private void cacheUser(CachedUser user) {
@@ -523,7 +539,16 @@ public class Telega {
     }
 
     public boolean process(int milliSeconds) {
+        incomingMessagesBackupProcess();
         return client.processUpdates(milliSeconds);
+    }
+
+    private void incomingMessagesBackupProcess() {
+        while (true) {
+            TdApi.Message peek = incomingMessagesBackup.peek();
+            if (null==peek) break;
+            incomingMessageProcess(peek, false);
+        }
     }
 
     public LocalDateTime getUserLastSeen(int id, String superGroupName, int cacheExpiredMins) throws Exception {

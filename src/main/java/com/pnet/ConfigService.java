@@ -7,11 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pnet.secure.Config;
-import lombok.Setter;
 
 import java.io.*;
 
-import static com.pnet.PNSystem.promptString;
+import static com.pnet.util.PNSystem.promptString;
 
 public class ConfigService {
 

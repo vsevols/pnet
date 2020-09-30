@@ -1,4 +1,4 @@
-package com.pnet;
+package com.pnet.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.TimeZone;
 
 public class PNSystem {
-    static String promptString(String prompt) {
+    public static String promptString(String prompt) {
         System.out.print(prompt+System.lineSeparator());
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String str = "";
@@ -25,5 +25,9 @@ public class PNSystem {
                 unixTime),
                 TimeZone.getDefault().toZoneId()
         );
+    }
+
+    public static void UnsupportedOperation(Object object) {
+        throw new UnsupportedOperationException(String.valueOf(object));
     }
 }
