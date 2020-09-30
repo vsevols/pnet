@@ -10,7 +10,7 @@ public class PublicationService {
     final Telega telega;
     final long observersChatId;
 
-    void publish(RoutingMessage msg) {
+    void publish(RoutingMessage msg) throws Exception {
         telega.sendMessage(observersChatId, getPublicationText(msg));
     }
 

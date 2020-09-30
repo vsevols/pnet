@@ -121,8 +121,13 @@ public class Router {
             }
             save();
 
-            if(userRegularNotScam)
-                publication.publish(msg);
+            if(userRegularNotScam) {
+                try {
+                    publication.publish(msg);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
         }else if (!msg.isGreeting()){
             config.incomingMessages.remove(msg);

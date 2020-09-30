@@ -32,7 +32,7 @@ class PublicationServiceTest extends AbstractPNetTest{
     }
 
     @Test
-    void publish() throws IOException {
+    void publish() throws Exception {
         TdApi.Message msg = TestingUtils.loadObject(TdApi.Message.class,
                 "com.pnet.PublicationServiceTest.publish", true);
 
