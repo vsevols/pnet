@@ -1,8 +1,7 @@
 package com.pnet.telega;
 
 import com.pnet.util.PersistentDataService;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +24,9 @@ public class BackupStorageList<T> {
 
     private void save() {
         try {
-            PersistentDataService.saveObject(path, list);
+            ListHolder o = new ListHolder();
+            o.list=list;
+            PersistentDataService.saveObject(path, o);
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
@@ -52,7 +53,10 @@ public class BackupStorageList<T> {
         return null;
     }
 
-    private class ListHolder {
+    //@AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public class ListHolder {
         public ArrayList<T> list;
     }
 }
