@@ -14,12 +14,14 @@ import java.io.IOException;
 class PublicationServiceTest extends AbstractPNetTest{
 
     private PublicationService publicationService;
+    private Telega telega;
 
     @BeforeEach
     void setUp() {
         super.setUp();
         try {
-            publicationService = new PublicationService(new Telega(true), Config.TEST_OUTBOUND_CHAT_ID);
+            telega = new Telega(true);
+            publicationService = new PublicationService(telega, Config.TEST_OUTBOUND_SUPERGROUP_ID);
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         } catch (CantLoadLibrary cantLoadLibrary) {
@@ -29,6 +31,7 @@ class PublicationServiceTest extends AbstractPNetTest{
 
     @AfterEach
     void tearDown() {
+        //telega.process(10000);
     }
 
     @Test

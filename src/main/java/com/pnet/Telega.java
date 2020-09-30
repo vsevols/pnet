@@ -779,14 +779,23 @@ public class Telega {
 
     public void sendMessage(long chatId, String text) throws Exception {
         try {
-            if(chatId<=Integer.MAX_VALUE)
+            try {
                 createBasicGroupChat(Math.toIntExact(chatId));
-            else UnsupportedOperation("TODO: createSuperGroupChat");
+            }catch (TdApiException e) {
+                if(e.getCode()!=6) {//Chat not found
+                    e.printStackTrace();
+                }
+                createSupergroupChat(Math.toIntExact(chatId));
+            }
 
             internalSendMessage(chatId, text);
         } catch (TdApiException e) {
             throw new Exception(e);
         }
+    }
+
+    private void createSupergroupChat(int chatId) throws TdApiException {
+        client.syncRequest(new TdApi.CreateSupergroupChat(chatId, true), new TdApi.Chat());
     }
 
     private void createBasicGroupChat(int chatId) throws TdApiException {
