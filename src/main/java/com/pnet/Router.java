@@ -71,12 +71,12 @@ public class Router {
                 new MessageImpl("Здрасьте"), true));
     }
 
-    private void messageRegister(Message msg) {
+    private boolean messageRegister(Message msg) {
         //Отфильтруем конференции
         if(msg.getSenderUserId()!=msg.getChatId())
-            return;
+            return true;
         if(msg.isOutgoing())
-            return;
+            return true;
 
         try {
             config.incomingMessages.add(RoutingMessage.fromMessage(msg));
@@ -84,6 +84,7 @@ public class Router {
             ioException.printStackTrace();
         }
         save();
+        return true;
     }
 
     private void processMessage(RoutingMessage msg) {

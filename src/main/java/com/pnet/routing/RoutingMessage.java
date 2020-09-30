@@ -1,10 +1,9 @@
 package com.pnet.routing;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.pnet.ConfigService;
 import com.pnet.abstractions.Message;
+import com.pnet.util.PersistentDataService;
 import lombok.Data;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 
@@ -29,7 +28,7 @@ public class RoutingMessage implements Message {
     public static RoutingMessage fromMessage(Message message) throws IOException {
         try {
             return new RoutingMessage(
-                    ConfigService.fromJson(MessageImpl.class, ConfigService.toJson(message)), false);
+                    PersistentDataService.fromJson(MessageImpl.class, PersistentDataService.toJson(message)), false);
         } catch (IOException ioException) {
             throw ioException;
         }

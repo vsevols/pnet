@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.*;
 
+import java.io.IOException;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
@@ -17,6 +18,8 @@ public class TelegaTest {
 
     @Test
     public void TestSendMessageAndOnMessage() throws CantLoadLibrary, TdApiException {
+        Debug.debug.dontInjectBackupedMessages=true;
+
         final String MESSAGE_TEXT =
                 "TestSendMessageAndOnMessage() message text";
 
@@ -24,12 +27,13 @@ public class TelegaTest {
 
         telega.onMessage = new OnMessageHandler() {
             @Override
-            public void onMessage(Message msg) {
+            public boolean onMessage(Message msg) {
                 //TODO: request and check partyId (phone)
                 //telega.getPartyId(msg.senderUserId)
                 if(//msg.phone.value.equals(Config.ACCOUNT_PHONE)&&
                         msg.getText().equals(MESSAGE_TEXT))
                     isPassed[0] =true;
+                return isPassed[0];
             }
         };
         telega.sendMessage(Config.ACCOUNT_PHONE, MESSAGE_TEXT);
@@ -44,7 +48,8 @@ public class TelegaTest {
     }
 
     @BeforeEach
-    public void setUp() throws CantLoadLibrary {
+    public void setUp() throws CantLoadLibrary, IOException {
+        Debug.debug=new Debug();
         telega = new Telega();
         telega.init();
     }

@@ -1,7 +1,7 @@
 package com.pnet.abstractions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.pnet.PNSystem;
+import com.pnet.util.PNSystem;
 
 import java.time.LocalDateTime;
 

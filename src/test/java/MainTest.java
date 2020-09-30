@@ -1,9 +1,8 @@
 import com.pnet.ConfigService;
-import static com.pnet.Debug.*;
 
 import com.pnet.Debug;
+import com.pnet.TestingUtils;
 import com.pnet.secure.Config;
-import com.pnet.telega.CachedUser;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +12,6 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -38,7 +36,7 @@ class MainTest {
     }
 
     private void setTestConfig(String etalonConfigName) throws IOException {
-        String localTestsDataPath = getLocalTestsDataPath("");
+        String localTestsDataPath = TestingUtils.getLocalTestsDataPath("");
         Config.setDataDirectory(localTestsDataPath);
         File dataFile = new File(ConfigService.getDataFilePath());
         FileCopyUtils.copy(new File(localTestsDataPath+ etalonConfigName),
@@ -66,13 +64,9 @@ class MainTest {
     }
 
     private void setTestConfig(Config config) {
-        String localTestsDataPath = getLocalTestsDataPath("");
+        String localTestsDataPath = TestingUtils.getLocalTestsDataPath("");
         Config.setDataDirectory(localTestsDataPath);
         ConfigService.saveConfig(config);
-    }
-
-    private String getLocalTestsDataPath(String path) {
-        return Config.toDataPath("tests/"+path);
     }
 
     @Disabled

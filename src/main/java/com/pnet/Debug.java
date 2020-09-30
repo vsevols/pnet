@@ -6,4 +6,5 @@ public class Debug {
     public boolean dontGenerateStartingMessages;
     public boolean dontReallySendMessages;
     public boolean noGreetingMessageTimeout;
+    public boolean dontInjectBackupedMessages;
 }
