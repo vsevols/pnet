@@ -548,7 +548,7 @@ public class Telega {
     }
 
     private void incomingMessagesBackupProcess() {
-        if(Debug.debug.dontInjectBackupedMessages)
+        if(Debug.debug.dontInjectBackupedMessages||Debug.debug.dontReallySendMessages)
             return;
 
         while (true) {
@@ -743,6 +743,20 @@ public class Telega {
     public User getUserInterface(int id, String superGroupName) throws Exception {
         TdApi.User user = discoverUser(id, superGroupName);
         return new UserImpl(user);
+    }
+
+    public void forwardMessage(Message msg, long chatId) {
+        try {
+            client.syncRequest(
+                    new TdApi.ForwardMessages(
+                            chatId, msg.getChatId(),
+                        new long[Math.toIntExact(msg.getId())],
+                        new TdApi.MessageSendOptions(false, false, null),
+                        false, false, false),
+                    new TdApi.Messages());
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private class AuthorizationRequestHandler implements ReceiveHandler {

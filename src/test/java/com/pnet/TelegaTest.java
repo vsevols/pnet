@@ -1,8 +1,10 @@
 package com.pnet;
 
 import com.pnet.abstractions.Message;
+import com.pnet.routing.MessageImpl;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
+import com.pnet.util.PersistentDataService;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.*;
 import java.io.IOException;
 import java.util.List;
 
+import static com.pnet.TestingUtils.getLocalTestsDataPath;
 import static java.lang.Thread.sleep;
 
 public class TelegaTest {
@@ -78,5 +81,14 @@ public class TelegaTest {
     @Test
     void getMeThenPrintMyId() throws TdApiException, Exception {
         System.out.println(telega.getMe());
+    }
+
+    @Disabled
+    @Test
+    void forwardMessage() throws IOException {
+        MessageImpl message= PersistentDataService.loadObject(
+                getLocalTestsDataPath(getClass().getTypeName()+"#forwardMessage"),
+                MessageImpl.class, true);
+        telega.forwardMessage(message, Config.TEST_OUTBOUND_CHAT_ID);
     }
 }
