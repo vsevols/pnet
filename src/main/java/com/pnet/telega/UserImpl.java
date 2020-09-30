@@ -11,14 +11,17 @@ import lombok.ToString;
 public class UserImpl implements User {
     private final TdApi.User user;
 
+    @Override
     public String getFirstName() {
         return user.firstName;
     }
 
+    @Override
     public String getLastName() {
         return user.lastName;
     }
 
+    @Override
     public String getUsername() {
         return user.username;
     }

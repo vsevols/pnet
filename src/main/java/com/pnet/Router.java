@@ -23,12 +23,14 @@ public class Router {
     public static final int MAX_MINUTES_RECENT_SEEN = USER_CACHE_EXPIRED_MINUTES*2;
     private Telega telega;
     private Config config;
+    private PublicationService publication;
 
     public void Init() throws CantLoadLibrary, IOException {
         load();
         telega = new Telega();
         telega.init();
         telega.onMessage = msg -> messageRegister(msg);
+        publication=new PublicationService(telega, Config.OBSERVERS_CHAT_ID);
     }
 
 
@@ -120,7 +122,7 @@ public class Router {
             save();
 
             if(userRegularNotScam)
-                messageForwardToObservers(msg);
+                publication.publish(msg);
 
         }else if (!msg.isGreeting()){
             config.incomingMessages.remove(msg);
@@ -137,10 +139,6 @@ public class Router {
         }
         if(!Debug.debug.dontAddVictims&&addMoreVictims())
             processMessage(msg);
-    }
-
-    private void messageForwardToObservers(RoutingMessage msg) {
-        telega.forwardMessage(msg, Config.OBSERVERS_CHAT_ID);
     }
 
     private String victimPrintInfo(Victim victim) {

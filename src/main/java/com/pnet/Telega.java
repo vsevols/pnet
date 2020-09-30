@@ -8,6 +8,7 @@ import com.pnet.telega.*;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
+import lombok.NoArgsConstructor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,12 +22,16 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.pnet.util.PNSystem.UnsupportedOperation;
 import static java.lang.Thread.sleep;
+
+
 
 
 /**TODO: onMessage в конструтор, вызывать processUpdates() из main
  *
  */
+@NoArgsConstructor
 public class Telega {
     private static final int SYNC_TIMEOUT_MS = 1000;
     public OnMessageHandler onMessage;
@@ -55,6 +60,12 @@ public class Telega {
     private static final String newLine = System.getProperty("line.separator");
     private final int WAIT_FOR_UPDATE_INTERVAL_MS = 1000;
     private BackupStorageList<TdApi.Message> incomingMessagesBackup;
+
+    public Telega(boolean init) throws IOException, CantLoadLibrary {
+        this();
+        if(init)
+            init();
+    }
 
     public void init() throws CantLoadLibrary, IOException {
 
@@ -95,21 +106,21 @@ public class Telega {
         TdApi.Contact[] contacts = new TdApi.Contact[]{
                 new TdApi.Contact(phone, "", "", null, 0)
         };
-            client.send(new TdApi.ImportContacts(contacts), new ReceiveHandler() {
-                @Override
-                public boolean onResult(TdApi.Object object) {
-                    switch (object.getConstructor()) {
-                        case TdApi.ImportedContacts.CONSTRUCTOR:
-                            TdApi.ImportedContacts contacts1 = (TdApi.ImportedContacts) object;
-                            if (1 != contacts1.userIds.length)
-                                throw new NoSuchElementException(phone);
-                            result[0] = contacts1.userIds[0];
-                            return true;
-                    }
-                    return false;
+        client.send(new TdApi.ImportContacts(contacts), new ReceiveHandler() {
+            @Override
+            public boolean onResult(TdApi.Object object) {
+                switch (object.getConstructor()) {
+                    case TdApi.ImportedContacts.CONSTRUCTOR:
+                        TdApi.ImportedContacts contacts1 = (TdApi.ImportedContacts) object;
+                        if (1 != contacts1.userIds.length)
+                            throw new NoSuchElementException(phone);
+                        result[0] = contacts1.userIds[0];
+                        return true;
                 }
-            });
-            return result[0];
+                return false;
+            }
+        });
+        return result[0];
 
         /*
         TdApi.ChatListMain chatListMain = new TdApi.ChatListMain();
@@ -411,7 +422,7 @@ public class Telega {
 
     private void cacheUser(CachedUser user) {
         //if(users.containsKey(user.id))
-          //  users.remove(user.id);
+        //  users.remove(user.id);
         users.put(user.id, user);
     }
 
@@ -745,19 +756,26 @@ public class Telega {
         return new UserImpl(user);
     }
 
+    /** This method hangs inside it.tdlight.tdlight.Client#send(it.tdlight.tdlight.Request)
+     * :-(
+     */
     public void forwardMessage(Message msg, long chatId) {
         try {
             client.syncRequest(
                     new TdApi.ForwardMessages(
                             chatId, msg.getChatId(),
-                        new long[Math.toIntExact(msg.getId())],
-                        new TdApi.MessageSendOptions(false, true,
-                                new TdApi.MessageSchedulingStateSendAtDate(0)),
-                        false, true, false),
+                            new long[Math.toIntExact(msg.getId())],
+                            new TdApi.MessageSendOptions(false, true,
+                                    new TdApi.MessageSchedulingStateSendAtDate(0)),
+                            false, true, false),
                     new TdApi.Messages());
         } catch (TdApiException e) {
             e.printStackTrace();
         }
+    }
+
+    public void sendMessage(long chatId, String text) {
+        internalSendMessage(chatId, text);
     }
 
     private class AuthorizationRequestHandler implements ReceiveHandler {
