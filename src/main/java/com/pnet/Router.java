@@ -199,12 +199,18 @@ public class Router {
     private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
         if(isMe(victim))
             return false;
+        if(isUserRegularNotScam(victim))
+            return false;
         if(!isRecentLastSeen(victim))
             return false;
         if(!noResponseTimeout(victim, msg))
             return false;
 
         return true;
+    }
+
+    private boolean isUserRegularNotScam(Victim victim) throws Exception {
+        return telega.isUserRegularNotScam(victim.getId(), victim.getGroupName());
     }
 
     private boolean isMe(Victim victim) throws Exception {

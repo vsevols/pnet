@@ -527,6 +527,14 @@ public class Telega {
     }
 
     public LocalDateTime getUserLastSeen(int id, String superGroupName, int cacheExpiredMins) throws Exception {
+        CachedUser user = discoverUser(id, superGroupName, cacheExpiredMins);
+        if (null==user)
+            return LocalDateTime.MIN;
+
+        return user.getLastSeen();
+    }
+
+    private CachedUser discoverUser(int id, String superGroupName, int cacheExpiredMins) throws Exception {
         if(null==users.get(id)){
             if(!"".equals(superGroupName))
                 getSupergroupMembers(superGroupName);
@@ -544,16 +552,16 @@ public class Telega {
             } catch (TdApiException e) {
                 throw new Exception(e);
             }
-            return getUserLastSeen(id, superGroupName, cacheExpiredMins);
+            return discoverUser(id, superGroupName);
         }
 
 
         while((null==users.get(id))&&process(SYNC_TIMEOUT_MS));
+        return users.get(id);
+    }
 
-        if (null==users.get(id))
-            return LocalDateTime.MIN;
-
-        return users.get(id).getLastSeen();
+    private CachedUser discoverUser(int id, String superGroupName) throws Exception {
+        return discoverUser(id, superGroupName, Integer.MAX_VALUE);
     }
 
     private TdApi.User getUser(int id) throws TdApiException {
@@ -692,6 +700,12 @@ public class Telega {
         }else {
             cacheUser(CachedUser.fromUser(users.remove(id), lastSeenNotBefore));
         }
+    }
+
+    public boolean isUserRegularNotScam(int id, String superGroupName) throws Exception {
+        TdApi.User user = discoverUser(id, superGroupName);
+        return (user.type.getConstructor()==TdApi.UserTypeRegular.CONSTRUCTOR)
+                &&!user.isScam;
     }
 
     private class AuthorizationRequestHandler implements ReceiveHandler {
