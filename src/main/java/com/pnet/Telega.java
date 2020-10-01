@@ -5,6 +5,7 @@ import com.pnet.abstractions.Message;
 import com.pnet.abstractions.User;
 import com.pnet.secure.Config;
 import com.pnet.telega.*;
+import com.pnet.util.CountDown;
 import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.*;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
@@ -684,9 +685,14 @@ public class Telega {
             //После получения TdApi.User:
             //При задержке <= 200 следующий вызов возвращает пустой массив
             //При задержке 400 иногда тоже
+            //При задержке 500 отваливается на пакетном запуске тестов
             if(userJustQueriedSleep) {
                 try {
-                    sleep(500);
+                    //sleep(2000);
+                    sleep(0);
+                    CountDown countDown=new CountDown(2000);
+                    while(!countDown.isExpired())
+                        process(countDown.getLeftInt());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     Thread.currentThread().interrupt();

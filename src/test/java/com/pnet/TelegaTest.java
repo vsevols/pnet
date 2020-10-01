@@ -91,6 +91,11 @@ public class TelegaTest {
     }
 
     @Test
+    void getMe() throws Exception {
+        Assertions.assertEquals(Config.ME_ID, telega.getMe());
+    }
+
+    @Test
     void getChatHistory() throws Exception {
         int id = telega.getMe();
         List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10, true);
@@ -115,10 +120,10 @@ public class TelegaTest {
         telega.forwardMessage(message,
                 telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
     }
-    
-    @Disabled
+
     @Test
     void checkChatInviteLink() throws Exception {
         Assertions.assertNotEquals(0, telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
     }
+
 }
