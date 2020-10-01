@@ -90,8 +90,16 @@ public class TelegaTest {
         MessageImpl message= PersistentDataService.loadObject(
                 getLocalTestsDataPath(getClass().getTypeName()+"#forwardMessage"),
                 MessageImpl.class, true);
-        telega.getUserInterface(message.getSenderUserId(), Config.TEST_CHAT_NAME);
-        telega.getChatHistory(message.getSenderUserId(), message.getId(), 0, 1, true);
-        telega.forwardMessage(message, Config.TEST_OUTBOUND_CHAT_ID);
+        //telega.getUserInterface(message.getSenderUserId(), Config.TEST_CHAT_NAME);
+        //telega.getChatHistory(message.getSenderUserId(), message.getId(), 0, 1, true);
+        //telega.forwardMessage(message, Config.TEST_OUTBOUND_CHAT_ID);
+        telega.forwardMessage(message,
+                telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
+    }
+    
+    @Disabled
+    @Test
+    void checkChatInviteLink() throws Exception {
+        Assertions.assertNotEquals(0, telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
     }
 }

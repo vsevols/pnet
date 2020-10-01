@@ -22,7 +22,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.pnet.util.PNSystem.UnsupportedOperation;
 import static java.lang.Thread.sleep;
 
 
@@ -779,15 +778,6 @@ public class Telega {
 
     public void sendMessage(long chatId, String text) throws Exception {
         try {
-            try {
-                createBasicGroupChat(Math.toIntExact(chatId));
-            }catch (TdApiException e) {
-                if(e.getCode()!=6) {//Chat not found
-                    e.printStackTrace();
-                }
-                createSupergroupChat(Math.toIntExact(chatId));
-            }
-
             internalSendMessage(chatId, text);
         } catch (TdApiException e) {
             throw new Exception(e);
@@ -800,6 +790,15 @@ public class Telega {
 
     private void createBasicGroupChat(int chatId) throws TdApiException {
         client.syncRequest(new TdApi.CreateBasicGroupChat(chatId, true), new TdApi.Chat());
+    }
+
+    public long checkChatInviteLink(String link) throws Exception {
+        try {
+            return client.syncRequest
+                    (new TdApi.CheckChatInviteLink(link), new TdApi.ChatInviteLinkInfo()).chatId;
+        } catch (TdApiException e) {
+            throw new Exception(e);
+        }
     }
 
     private class AuthorizationRequestHandler implements ReceiveHandler {

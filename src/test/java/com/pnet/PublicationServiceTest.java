@@ -7,6 +7,7 @@ import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -21,11 +22,10 @@ class PublicationServiceTest extends AbstractPNetTest{
         super.setUp();
         try {
             telega = new Telega(true);
-            publicationService = new PublicationService(telega, Config.TEST_OUTBOUND_SUPERGROUP_ID);
-        } catch (IOException ioException) {
-            throw new RuntimeException(ioException);
-        } catch (CantLoadLibrary cantLoadLibrary) {
-            throw new RuntimeException(cantLoadLibrary);
+            publicationService = new PublicationService(telega,
+                    telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
         }
     }
 
