@@ -26,7 +26,7 @@ public class TelegaClient extends Client {
             return;
         Response response;
         do {
-            response = receive(0);
+            response = receive(0, true, false);
             if(null==response)
                 continue;
               //  throw new TimeoutException(function.toString());
