@@ -761,6 +761,7 @@ public class Telega {
     /** This method hangs inside it.tdlight.tdlight.Client#send(it.tdlight.tdlight.Request)
      * :-(
      */
+    @Deprecated
     public void forwardMessage(Message msg, long chatId) {
         try {
             client.syncRequest(

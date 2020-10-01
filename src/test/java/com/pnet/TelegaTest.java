@@ -2,6 +2,7 @@ package com.pnet;
 
 import com.pnet.abstractions.Message;
 import com.pnet.routing.MessageImpl;
+import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
 import com.pnet.util.PersistentDataService;
@@ -26,22 +27,39 @@ public class TelegaTest {
         final String MESSAGE_TEXT =
                 "TestSendMessageAndOnMessage() message text";
 
+        sendMessageRoundtrip(MESSAGE_TEXT);
+    }
+
+    @Test
+    public void givenCyrillicText_WhenSendMessageToSelfReceiveSerializeDeserialize_ThenTextEquals() throws TdApiException, IOException {
+        final String text = "Тест кириллицы";
+        RoutingMessage msg = RoutingMessage.fromMessage(sendMessageRoundtrip(text));
+
+        TestingUtils.saveObjectTemp(msg);
+        msg = TestingUtils.loadObjectTemp(RoutingMessage.class, true);
+        Assertions.assertEquals(text, msg.getText());
+    }
+
+    private Message sendMessageRoundtrip(String text) throws TdApiException {
         final boolean[] isPassed = new boolean[1];
+        final Message[] result = new Message[1];
 
         telega.onMessage = new OnMessageHandler() {
             @Override
             public boolean onMessage(Message msg) {
-                //TODO: request and check partyId (phone)
                 //telega.getPartyId(msg.senderUserId)
                 if(//msg.phone.value.equals(Config.ACCOUNT_PHONE)&&
-                        msg.getText().equals(MESSAGE_TEXT))
-                    isPassed[0] =true;
-                return isPassed[0];
+                        msg.getText().equals(text))
+                    result[0] =msg;
+
+                return null!=result[0];
             }
         };
-        telega.sendMessage(Config.ACCOUNT_PHONE, MESSAGE_TEXT);
-        while (!isPassed[0])
+        telega.sendMessage(Config.ACCOUNT_PHONE, text);
+        while (null==result[0])
             telega.process(1000);
+
+        return result[0];
     }
 
     @Test
@@ -53,6 +71,7 @@ public class TelegaTest {
     @BeforeEach
     public void setUp() throws CantLoadLibrary, IOException {
         Debug.debug=new Debug();
+        Debug.debug.dontInjectBackupedMessages=true;
         telega = new Telega();
         telega.init();
     }
