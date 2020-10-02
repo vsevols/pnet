@@ -247,7 +247,7 @@ public class Router {
     private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
         if(isMe(victim))
             return false;
-        if(isUserRegularNotScam(victim))
+        if(!isUserRegularNotScam(victim))
             return false;
         if(!isRecentLastSeen(victim))
             return false;

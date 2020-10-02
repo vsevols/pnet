@@ -87,16 +87,14 @@ public class Telega {
         incomingMessagesBackup.load();
 
         while (!haveAuthorization) {
-            client.processUpdates(1000);
+            client.tryProcessUpdates(1000);
         }
 
     }
 
     private void createPrivateChat(int userId) throws TdApiException {
         client.send(new TdApi.CreatePrivateChat(userId, true));
-        while(!chats.containsKey(new Long(userId))) {
-            client.processUpdates(WAIT_FOR_UPDATE_INTERVAL_MS);
-        }
+        while(!chats.containsKey(new Long(userId))&&!client.processUpdates(WAIT_FOR_UPDATE_INTERVAL_MS));
     }
 
 
@@ -558,7 +556,7 @@ public class Telega {
 
     public boolean process(int milliSeconds) {
         incomingMessagesBackupProcess();
-        return client.processUpdates(milliSeconds);
+        return client.tryProcessUpdates(milliSeconds);
     }
 
     private void incomingMessagesBackupProcess() {
@@ -573,14 +571,14 @@ public class Telega {
     }
 
     public LocalDateTime getUserLastSeen(int id, String superGroupName, int cacheExpiredMins) throws Exception {
-        CachedUser user = discoverUser(id, superGroupName, cacheExpiredMins);
+        CachedUser user = obtainUser(id, superGroupName, cacheExpiredMins);
         if (null==user)
             return LocalDateTime.MIN;
 
         return user.getLastSeen();
     }
 
-    private CachedUser discoverUser(int id, String superGroupName, int cacheExpiredMins) throws Exception {
+    private CachedUser obtainUser(int id, String superGroupName, int cacheExpiredMins) throws Exception {
         if(null==users.get(id)){
             if(!"".equals(superGroupName))
                 getSupergroupMembers(superGroupName);
@@ -598,16 +596,19 @@ public class Telega {
             } catch (TdApiException e) {
                 throw new Exception(e);
             }
-            return discoverUser(id, superGroupName);
+            return obtainUser(id, superGroupName);
         }
 
 
         while((null==users.get(id))&&process(SYNC_TIMEOUT_MS));
-        return users.get(id);
+        CachedUser cachedUser = users.get(id);
+        if(null==cachedUser)
+            throw new TimeoutException(String.format("obtainUser %s %s", id, superGroupName));
+        return cachedUser;
     }
 
-    private CachedUser discoverUser(int id, String superGroupName) throws Exception {
-        return discoverUser(id, superGroupName, Integer.MAX_VALUE);
+    private CachedUser obtainUser(int id, String superGroupName) throws Exception {
+        return obtainUser(id, superGroupName, Integer.MAX_VALUE);
     }
 
     private TdApi.User getUser(int id) throws TdApiException {
@@ -680,6 +681,7 @@ public class Telega {
     public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit, boolean userJustQueriedSleep) {
         TdApi.Messages result;
         try {
+            getContacts();
             createPrivateChat(userId);
 
             //После получения TdApi.User:
@@ -711,6 +713,10 @@ public class Telega {
                 add(new MessageImpl(result.messages[i]));
             }
         }};
+    }
+
+    private void getContacts() throws TdApiException {
+        client.syncRequest(new TdApi.GetContacts(), new TdApi.Users());
     }
 
     public Chat tryChatByUserId(int id) {
@@ -754,7 +760,7 @@ public class Telega {
     }
 
     public boolean isUserRegularNotScam(int id, String superGroupName) throws Exception {
-        TdApi.User user = discoverUser(id, superGroupName);
+        TdApi.User user = obtainUser(id, superGroupName);
         return (user.type.getConstructor()==TdApi.UserTypeRegular.CONSTRUCTOR)
                 &&!user.isScam;
     }
@@ -762,7 +768,7 @@ public class Telega {
     public User tryObtainUser(int id, String superGroupName){
         TdApi.User user = null;
         try {
-            user = discoverUser(id, superGroupName);
+            user = obtainUser(id, superGroupName);
         } catch (Exception e) {
             e.printStackTrace();
         }

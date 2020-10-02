@@ -71,7 +71,7 @@ public class TelegaClient extends Client {
         return wasReceived;
     }
 
-    public boolean processReceive(int timeOutMs, ReceiveHandler receiveHandler) {
+    public boolean tryProcessReceive(int timeOutMs, ReceiveHandler receiveHandler) {
         try {
             return processReceive(true, timeOutMs, receiveHandler);
         } catch (TdApiException e) {
@@ -92,7 +92,11 @@ public class TelegaClient extends Client {
         return (T) result[0];
     }
 
-    public boolean processUpdates(int timeOutMs) {
-        return processReceive(timeOutMs, defaultReceiveHandler);
+    public boolean tryProcessUpdates(int timeOutMs) {
+        return tryProcessReceive(timeOutMs, defaultReceiveHandler);
+    }
+
+    public boolean processUpdates(int timeOutMs) throws TdApiException {
+        return processReceive(true, timeOutMs, defaultReceiveHandler);
     }
 }
