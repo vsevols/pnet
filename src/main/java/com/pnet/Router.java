@@ -113,9 +113,9 @@ public class Router {
             boolean userRegularNotScam = false;
             try {
                 userRegularNotScam = isUserRegularNotScam(victim);
+                victim.isRegularNotScam=userRegularNotScam;
             } catch (Exception e) {
                 e.printStackTrace();
-                return;
             }
             if(userRegularNotScam) {
                 config.victims.moveToFirst(victim.id);
@@ -159,7 +159,7 @@ public class Router {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return String.format("label: %svictim:\n%suser:\n%s", victimService.getLabel(victim), victim, user);
+        return String.format("label: %s\nvictim:\n%s\nuser:\n%s", victimService.getLabel(victim), victim, user);
     }
 
     private void setUserLastSeen(int id, LocalDateTime lastSeenNotBefore) {
@@ -259,6 +259,9 @@ public class Router {
     }
 
     private boolean isUserRegularNotScam(Victim victim) throws Exception {
+        if(victim.isRegularNotScam)
+            return true;
+
         return telega.isUserRegularNotScam(victim.getId(), victim.getGroupName());
     }
 
