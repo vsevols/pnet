@@ -20,7 +20,7 @@ class PublicationServiceTest extends AbstractPNetTest{
         super.setUp();
         try {
             telega = new Telega(true);
-            publicationService = new PublicationService(telega,
+            publicationService = new PublicationService(telega, new VictimService(telega),
                     telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
         } catch (Exception exception) {
             throw new RuntimeException(exception);

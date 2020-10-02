@@ -1,6 +1,5 @@
 package com.pnet;
 
-import com.pnet.abstractions.User;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.routing.VictimList;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class PublicationService {
     final Telega telega;
+    private final VictimService victimService;
     final long observersChatId;
 
     void publish(RoutingMessage msg, VictimList victims) throws Exception {
@@ -17,7 +17,7 @@ public class PublicationService {
     }
 
     private String getPublicationText(RoutingMessage msg, VictimList victims) {
-        return String.format("%s (msgId: %d)\n%s", getVictimLabel(victims.getByKey(msg.getSenderUserId())),
+        return String.format("%s (msgId: %d)\n%s", victimService.getLabel(victims.getByKey(msg.getSenderUserId())),
                 msg.getId(), msg.getText());
     }
 
@@ -27,9 +27,9 @@ public class PublicationService {
         for (Integer userId :
                 reproducedTo) {
             if(null==labels)
-                labels=getVictimLabel(victims.getByKey(userId));
+                labels= victimService.getLabel(victims.getByKey(userId));
             else
-            labels=String.format("%s, %s", labels, getVictimLabel(victims.getByKey(userId)));
+            labels=String.format("%s, %s", labels, victimService.getLabel(victims.getByKey(userId)));
         }
 
         try {
@@ -39,14 +39,4 @@ public class PublicationService {
         }
     }
 
-    private String getVictimLabel(Victim victim) {
-        try {
-            User user = telega.tryObtainUser(victim.getId(), victim.groupName);
-            if(null!=user)
-                return String.format("%s %s", user.getFirstName(), user.getLastName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "Unknown";
-    }
 }

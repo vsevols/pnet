@@ -8,6 +8,7 @@ import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 
+import javax.swing.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,13 +25,15 @@ public class Router {
     private Telega telega;
     private Config config;
     private PublicationService publication;
+    private VictimService victimService;
 
     public void Init() throws Exception {
         load();
         telega = new Telega();
         telega.init();
         telega.onMessage = msg -> messageRegister(msg);
-        publication=new PublicationService(telega,
+        victimService=new VictimService(telega);
+        publication=new PublicationService(telega, victimService,
                 Debug.debug.isTesting?
                         telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK):
                         telega.checkChatInviteLink(Config.OBSERVERS_CHAT_INVITELINK));
@@ -158,7 +161,7 @@ public class Router {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return String.format("victim:\n%suser:\n%s", victim, user);
+        return String.format("label: %svictim:\n%suser:\n%s", victimService.getLabel(victim), victim, user);
     }
 
     private void setUserLastSeen(int id, LocalDateTime lastSeenNotBefore) {
