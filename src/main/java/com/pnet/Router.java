@@ -121,7 +121,8 @@ public class Router {
                 config.victims.moveToFirst(victim.id);
                 config.lastIncomingMessageMoment = LocalDateTime.now();
             }else{
-                logInfo("Deleting victim:\n"+victimPrintInfo(victim));
+                logInfo(String.format("Deleting victim:\n%s\nthat said:\n%s",
+                        victimPrintInfo(victim), msg));
                 config.victims.remove(victim);
                 config.incomingMessages.remove(msg);
             }
@@ -276,21 +277,28 @@ public class Router {
             return false;
 
         int outgoingCount=0;
-        LocalDateTime incomingMoment=LocalDateTime.MAX;
+        LocalDateTime lastOutgoingMoment=LocalDateTime.MIN;
         for (Message message:
              chatHistory) {
-            if(!message.isOutgoing()) {
-                incomingMoment=message.getLocalDateTime();
+            if(!message.isOutgoing())
                 break;
-            }
+
             outgoingCount++;
+            if(lastOutgoingMoment.isBefore(message.getLocalDateTime()))
+                    lastOutgoingMoment=message.getLocalDateTime();
         }
-        int timeoutMinutes=outgoingCount*9;
 
-        if(0==outgoingCount)
+        if(0==outgoingCount) {
             return true;
+        }
 
-        return LocalDateTime.now().isAfter(incomingMoment.plusMinutes(timeoutMinutes));
+        //1->9
+        //2->90
+        //3->900
+        // ...
+        int timeoutMinutes=(int) Math.pow(10, outgoingCount-1)*9;
+
+        return LocalDateTime.now().minusMinutes(timeoutMinutes).isAfter(lastOutgoingMoment);
     }
 
     private boolean isRecentLastSeen(Victim victim) {

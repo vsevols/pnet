@@ -71,14 +71,11 @@ class MainTest {
     @Disabled
     @Test
     public void scratch(){
-        ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<>();
-        map.put(1,1);
-        map.put(1,2);
-        map.put(1,3);
-        int i = map.get(1);
-        map.put(new Integer (1), 1);
-        map.put(new Integer (1), 2);
-        map.put(new Integer (1), 3);
-        i=map.get(1);
+        int outgoingCount=0;
+        int timeoutMinutes;
+        timeoutMinutes= (int) (Math.pow(10, ++outgoingCount-1)*9);
+        timeoutMinutes= (int) (Math.pow(10, ++outgoingCount-1)*9);
+        timeoutMinutes= (int) (Math.pow(10, ++outgoingCount-1)*9);
+        timeoutMinutes= (int) (Math.pow(10, ++outgoingCount-1)*9);
     }
 }
