@@ -98,12 +98,12 @@ public class TelegaTest {
     @Test
     void givenGetMe_WhenGetChatHistory_ThenHistorySizeNotEquals0() throws Exception {
         int id = telega.getMe();
-        List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10, true);
+        List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10);
         Assertions.assertNotEquals(0, chatHistory.size());
     }
     @Test
     void givenTEST_OUTBOUND_USER_ID_WhenGetChatHistory_ThenHistorySizeNotEquals0() throws Exception {
-        List<Message> chatHistory = telega.getChatHistory(Config.TEST_OUTBOUND_USER_ID, 0, 0, 10, false);
+        List<Message> chatHistory = telega.getChatHistory(Config.TEST_OUTBOUND_USER_ID, 0, 0, 10);
         Assertions.assertNotEquals(0, chatHistory.size());
     }
 

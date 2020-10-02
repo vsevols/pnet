@@ -678,13 +678,10 @@ public class Telega {
         return result;
     }
 
-    public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit, boolean userJustQueriedSleep) {
+    public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit) {
         TdApi.Messages result;
         try {
-            delayProcess();
             getContacts();
-
-            delayProcess();
             createPrivateChat(userId);
 
             //После получения TdApi.User:
@@ -708,7 +705,7 @@ public class Telega {
     }
 
     private void delayProcess() {
-        CountDown countDown=new CountDown(2000);
+        CountDown countDown=new CountDown(500);
         while(!countDown.isExpired())
             process(countDown.getLeftInt());
     }

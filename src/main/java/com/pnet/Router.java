@@ -6,9 +6,7 @@ import com.pnet.routing.MessageImpl;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
-import it.tdlight.tdlight.utils.CantLoadLibrary;
 
-import javax.swing.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -269,7 +267,7 @@ public class Router {
     }
 
     private boolean noResponseTimeout(Victim victim, RoutingMessage msg) {
-        List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES, false);
+        List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
 
         if(msg.isGreeting()&&chatHistory.size()>0)
             return false;
