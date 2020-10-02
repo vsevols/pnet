@@ -28,7 +28,7 @@ class MainTest {
 
     @Disabled //test for debug
     @Test
-    void mainIncomingMessageEmulateDontRealySendMessages() throws IOException, CantLoadLibrary {
+    void mainIncomingMessageEmulateDontRealySendMessages() throws Exception {
         Debug.debug.dontReallyReproduceMessages =true;
         setTestConfig("mainIncomingMessageEmulate.json");
         Main.main(new String[0]);
@@ -45,7 +45,7 @@ class MainTest {
     //test for debug
     @Disabled
     @Test
-    void emptyConfigDontRealySendMessages() throws IOException, CantLoadLibrary {
+    void emptyConfigDontRealySendMessages() throws Exception {
         Debug.debug.dontReallyReproduceMessages =true;
         //debug.noGreetingMessageTimeout=true;
         setTestConfig(Config.emptyConfig());
@@ -55,7 +55,7 @@ class MainTest {
     //test for debug
     @Disabled
     @Test
-    void workingConfigCopyDontRealySendMessages() throws IOException, CantLoadLibrary {
+    void workingConfigCopyDontRealySendMessages() throws Exception {
         Debug.debug.dontReallyReproduceMessages =true;
         //debug.noGreetingMessageTimeout=true;
         setTestConfig(ConfigService.loadConfig());

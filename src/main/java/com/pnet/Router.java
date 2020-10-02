@@ -25,13 +25,15 @@ public class Router {
     private Config config;
     private PublicationService publication;
 
-    public void Init() throws CantLoadLibrary, IOException {
+    public void Init() throws Exception {
         load();
         telega = new Telega();
         telega.init();
         telega.onMessage = msg -> messageRegister(msg);
         publication=new PublicationService(telega,
-                Debug.debug.isTesting?Config.TEST_OUTBOUND_CHAT_ID:Config.OBSERVERS_CHAT_ID);
+                Debug.debug.isTesting?
+                        telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK):
+                        telega.checkChatInviteLink(Config.OBSERVERS_CHAT_INVITELINK));
     }
 
 
@@ -86,7 +88,9 @@ public class Router {
             ioException.printStackTrace();
         }
         save();
-        return true;
+
+        //Не удаляем сообщение из бэкап-очереди, т.к. тесты не добавляют его в основной конфиг
+        return !Debug.debug.isTesting;
     }
 
     private void logInfo(String message){
@@ -227,6 +231,7 @@ public class Router {
             if(!Debug.debug.dontReallyReproduceMessages)
                 telega.sendMessage(victim.id, msg.getText());
             msg.setReproducedCount(msg.getReproducedCount()+1);
+            msg.reproducedTo.add(victim.id);
             save();
         } catch (TdApiException e) {
             e.printStackTrace();
