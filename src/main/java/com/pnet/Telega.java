@@ -759,9 +759,14 @@ public class Telega {
                 &&!user.isScam;
     }
 
-    public User getUserInterface(int id, String superGroupName) throws Exception {
-        TdApi.User user = discoverUser(id, superGroupName);
-        return new UserImpl(user);
+    public User tryObtainUser(int id, String superGroupName){
+        TdApi.User user = null;
+        try {
+            user = discoverUser(id, superGroupName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null!=user?new UserImpl(user):null;
     }
 
     /** This method hangs inside it.tdlight.tdlight.Client#send(it.tdlight.tdlight.Request)

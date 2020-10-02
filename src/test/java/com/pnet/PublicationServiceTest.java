@@ -1,16 +1,13 @@
 package com.pnet;
 
 import com.pnet.routing.RoutingMessage;
+import com.pnet.routing.VictimList;
 import com.pnet.secure.Config;
 import com.pnet.telega.MessageImpl;
 import it.tdlight.tdlib.TdApi;
-import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
 
 class PublicationServiceTest extends AbstractPNetTest{
 
@@ -40,6 +37,10 @@ class PublicationServiceTest extends AbstractPNetTest{
                 "com.pnet.PublicationServiceTest.publish", true);
 
         RoutingMessage routingMessage = RoutingMessage.fromMessage(new MessageImpl(msg));
-        publicationService.publish(routingMessage);
+        VictimList victims = new VictimList();
+        victims.add(Config.TEST_VICTIM);
+        publicationService.publish(routingMessage, victims);
+        routingMessage.reproducedTo.add(victims.get(0).id);
+        publicationService.publishReproduced(routingMessage, victims);
     }
 }

@@ -54,7 +54,7 @@ public class TelegaClient extends Client {
         do {
             long between = ChronoUnit.SECONDS.between(LocalDateTime.now(), till);
             if(ChronoUnit.MILLIS.between(LocalDateTime.now(), till)>0)
-                between++;
+                between++; //TODO: receive(double!)
             response = receive(wasReceived?0: between>0?between:0);
             if(null!=response) {
                 wasReceived=true;

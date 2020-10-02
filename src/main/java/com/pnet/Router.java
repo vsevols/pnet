@@ -123,7 +123,7 @@ public class Router {
 
             if(userRegularNotScam) {
                 try {
-                    publication.publish(msg);
+                    publication.publish(msg, config.victims);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -149,7 +149,7 @@ public class Router {
     private String victimPrintInfo(Victim victim) {
         User user=null;
         try {
-            user=telega.getUserInterface(victim.id, victim.groupName);
+            user=telega.tryObtainUser(victim.id, victim.groupName);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -232,6 +232,7 @@ public class Router {
         }
 
         if(msg.getReproducedCount()>=MAX_COPIES){
+            publication.publishReproduced(msg, config.victims);
             return true;
         }
         return false;

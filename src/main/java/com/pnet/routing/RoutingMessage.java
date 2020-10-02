@@ -1,6 +1,7 @@
 package com.pnet.routing;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.pnet.Victim;
 import com.pnet.abstractions.Message;
 import com.pnet.util.PersistentDataService;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 @Data
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class RoutingMessage implements Message {
     @Delegate
     private final MessageImpl msg;
     private final boolean isGreeting;
+    public final ArrayList<Integer> reproducedTo=new ArrayList<>();
     private int reproducedCount;
     public static RoutingMessage fromMessage(Message message) throws IOException {
         try {
