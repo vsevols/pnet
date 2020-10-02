@@ -286,7 +286,7 @@ public class Router {
         if(0==outgoingCount)
             return true;
 
-        return incomingMoment.plusMinutes(timeoutMinutes).isBefore(LocalDateTime.now());
+        return LocalDateTime.now().isAfter(incomingMoment.plusMinutes(timeoutMinutes));
     }
 
     private boolean isRecentLastSeen(Victim victim) {
