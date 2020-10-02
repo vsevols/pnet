@@ -579,16 +579,29 @@ public class Telega {
     }
 
     private CachedUser obtainUser(int id, String superGroupName, int cacheExpiredMins) throws Exception {
+        try {
+            getContacts();
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            createPrivateChat(id);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
+        delayProcess();
+
         if(null==users.get(id)){
             if(!"".equals(superGroupName))
                 getSupergroupMembers(superGroupName);
-            else {
-                try {
-                    getUser(id);
-                } catch (TdApiException e) {
-                    throw new Exception(e);
-                }
+
+            try {
+                getUser(id);
+            } catch (TdApiException e) {
+                throw new Exception(e);
             }
+
         }else if(users.get(id).isExpired(cacheExpiredMins)){
             users.remove(users.get(id).id);
             try {

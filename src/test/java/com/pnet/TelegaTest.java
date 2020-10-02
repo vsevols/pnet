@@ -131,4 +131,8 @@ public class TelegaTest {
         Assertions.assertNotEquals(0, telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
     }
 
+    @Test
+    void isUserRegularNotScam() throws Exception {
+        Assertions.assertTrue(telega.isUserRegularNotScam(924113501, Config.TEST_CHAT_NAME));
+    }
 }
