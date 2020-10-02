@@ -681,25 +681,17 @@ public class Telega {
     public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit, boolean userJustQueriedSleep) {
         TdApi.Messages result;
         try {
+            delayProcess();
             getContacts();
+
+            delayProcess();
             createPrivateChat(userId);
 
             //После получения TdApi.User:
             //При задержке <= 200 следующий вызов возвращает пустой массив
             //При задержке 400 иногда тоже
             //При задержке 500 отваливается на пакетном запуске тестов
-            if(userJustQueriedSleep) {
-                try {
-                    //sleep(2000);
-                    sleep(0);
-                    CountDown countDown=new CountDown(2000);
-                    while(!countDown.isExpired())
-                        process(countDown.getLeftInt());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Thread.currentThread().interrupt();
-                }
-            }
+            delayProcess();
 
             result = client.syncRequest(
                     new TdApi.GetChatHistory(userId, fromMessageId, offset, limit, true), new TdApi.Messages());
@@ -713,6 +705,12 @@ public class Telega {
                 add(new MessageImpl(result.messages[i]));
             }
         }};
+    }
+
+    private void delayProcess() {
+        CountDown countDown=new CountDown(2000);
+        while(!countDown.isExpired())
+            process(countDown.getLeftInt());
     }
 
     private void getContacts() throws TdApiException {
