@@ -562,7 +562,7 @@ public class Telega {
     }
 
     private void incomingMessagesBackupProcess() {
-        if(Debug.debug.dontInjectBackupedMessages||Debug.debug.dontReallySendMessages)
+        if(Debug.debug.dontInjectBackupedMessages||Debug.debug.dontReallyReproduceMessages)
             return;
 
         while (true) {

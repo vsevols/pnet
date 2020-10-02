@@ -19,19 +19,18 @@ class MainTest {
 
     @BeforeEach
     void setUp() {
-        Debug.debug=new Debug();
+        Debug.debug=new Debug(true);
     }
 
     @AfterEach
     void tearDown() {
-        Debug.debug=new Debug();
     }
 
     @Disabled //test for debug
     @Test
     void mainIncomingMessageEmulateDontRealySendMessages() throws IOException, CantLoadLibrary {
+        Debug.debug.dontReallyReproduceMessages =true;
         setTestConfig("mainIncomingMessageEmulate.json");
-        Debug.debug.dontReallySendMessages=true;
         Main.main(new String[0]);
     }
 
@@ -47,7 +46,7 @@ class MainTest {
     @Disabled
     @Test
     void emptyConfigDontRealySendMessages() throws IOException, CantLoadLibrary {
-        Debug.debug.dontReallySendMessages=true;
+        Debug.debug.dontReallyReproduceMessages =true;
         //debug.noGreetingMessageTimeout=true;
         setTestConfig(Config.emptyConfig());
         Main.main(new String[0]);
@@ -57,7 +56,7 @@ class MainTest {
     @Disabled
     @Test
     void workingConfigCopyDontRealySendMessages() throws IOException, CantLoadLibrary {
-        Debug.debug.dontReallySendMessages=true;
+        Debug.debug.dontReallyReproduceMessages =true;
         //debug.noGreetingMessageTimeout=true;
         setTestConfig(ConfigService.loadConfig());
         Main.main(new String[0]);
@@ -72,7 +71,7 @@ class MainTest {
     @Disabled
     @Test
     public void scratch(){
-        ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<Integer, Integer>();
+        ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<>();
         map.put(1,1);
         map.put(1,2);
         map.put(1,3);

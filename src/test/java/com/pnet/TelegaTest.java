@@ -70,7 +70,7 @@ public class TelegaTest {
 
     @BeforeEach
     public void setUp() throws CantLoadLibrary, IOException {
-        Debug.debug=new Debug();
+        Debug.debug=new Debug(true);
         Debug.debug.dontInjectBackupedMessages=true;
         telega = new Telega();
         telega.init();

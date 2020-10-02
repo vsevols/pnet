@@ -30,7 +30,8 @@ public class Router {
         telega = new Telega();
         telega.init();
         telega.onMessage = msg -> messageRegister(msg);
-        publication=new PublicationService(telega, Config.OBSERVERS_CHAT_ID);
+        publication=new PublicationService(telega,
+                Debug.debug.isTesting?Config.TEST_OUTBOUND_CHAT_ID:Config.OBSERVERS_CHAT_ID);
     }
 
 
@@ -223,7 +224,7 @@ public class Router {
         try {
             logInfo(String.format("Reproducing message:\n%s\nto:\n%s",
                     msg, victimPrintInfo(victim)));
-            if(!Debug.debug.dontReallySendMessages)
+            if(!Debug.debug.dontReallyReproduceMessages)
                 telega.sendMessage(victim.id, msg.getText());
             msg.setReproducedCount(msg.getReproducedCount()+1);
             save();
