@@ -11,6 +11,7 @@ public class Victim {
     public final int id;
     public final String groupName;
     public boolean isRegularNotScam;
+    public String phone;
 
     public static int getKey(Victim victim) {
         return victim.id;

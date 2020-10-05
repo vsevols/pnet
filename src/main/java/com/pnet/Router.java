@@ -227,6 +227,8 @@ public class Router {
             return true;
         }
 
+        victimSetUserIdByPhone(victim);
+
         try {
             if(!isVictimSuitable(victim, msg))
                 return false;
@@ -252,6 +254,19 @@ public class Router {
             return true;
         }
         return false;
+    }
+
+    private void victimSetUserIdByPhone(Victim victim) {
+        if(victim.phone.equals(""))
+            return;
+
+        try {
+            Victim victim1 = new Victim(telega.userIdByPhone(victim.phone), victim.groupName);
+            config.victims.remove(victim);
+            config.victims.add(victim1);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
