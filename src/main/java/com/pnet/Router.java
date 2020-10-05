@@ -175,7 +175,7 @@ public class Router {
 
         int i = config.incomingMessages.indexOf(msg);
         if(i<0)
-            throw new NoSuchElementException();
+            return;
         config.incomingMessagesArchive.add(msg);
         config.incomingMessages.remove(msg);
 

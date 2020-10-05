@@ -235,6 +235,8 @@ public class Telega {
             case TdApi.UpdateChatPhoto.CONSTRUCTOR: {
                 TdApi.UpdateChatPhoto updateChat = (TdApi.UpdateChatPhoto) object;
                 TdApi.Chat chat = chats.get(updateChat.chatId);
+                if(null==chat)
+                    chats.put(chat.id, chat);
                 synchronized (chat) {
                     chat.photo = updateChat.photo;
                 }
