@@ -12,6 +12,7 @@ public class Victim {
     public final String groupName;
     public boolean isRegularNotScam;
     public final String phone;
+    public int tailOutgoingCount;
 
     public static int getKey(Victim victim) {
         return victim.id;

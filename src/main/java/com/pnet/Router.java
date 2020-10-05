@@ -311,6 +311,13 @@ public class Router {
                     lastOutgoingMoment=message.getLocalDateTime();
         }
 
+        //Особенности реализации выдачи истории Телеги
+        if(outgoingCount>0){
+            outgoingCount=victim.tailOutgoingCount;
+            if(victim.tailOutgoingCount<outgoingCount)
+                victim.tailOutgoingCount=outgoingCount;
+        }
+
         if(0==outgoingCount) {
             return true;
         }
