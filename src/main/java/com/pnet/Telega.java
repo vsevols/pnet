@@ -582,7 +582,7 @@ public class Telega {
 
     private CachedUser obtainUser(int id, String superGroupName, int cacheExpiredMins) throws Exception {
         if(null==users.get(id)){
-            if(!"".equals(superGroupName))
+            if(null!=superGroupName&&!"".equals(superGroupName))
                 getSupergroupMembers(superGroupName);
             else {
                 try {

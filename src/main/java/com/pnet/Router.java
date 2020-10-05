@@ -10,13 +10,12 @@ import com.pnet.telega.TdApiException;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 public class Router {
 
     private int getMaxReproduceCount(){
-      return Math.round(3/config.incomingMessages.size());
+      return config.incomingMessages.size()>0?Math.round(3/config.incomingMessages.size()):3;
     };
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
@@ -72,7 +71,7 @@ public class Router {
     }
 
     private void checkGenerateStartingMessage() {
-        if(LocalDateTime.now().minusMinutes(3).isAfter(config.lastIncomingMessageMoment))
+        if(LocalDateTime.now().minusMinutes(3).isBefore(config.lastIncomingMessageMoment))
             return;
         processMessage(new RoutingMessage(
                 new MessageImpl("Здрасьте"), true));
@@ -227,7 +226,7 @@ public class Router {
             return true;
         }
 
-        victimSetUserIdByPhone(victim);
+        victim=victimSetUserIdByPhone(victim);
 
         try {
             if(!isVictimSuitable(victim, msg))
@@ -256,16 +255,19 @@ public class Router {
         return false;
     }
 
-    private void victimSetUserIdByPhone(Victim victim) {
-        if(victim.phone.equals(""))
-            return;
+    private Victim victimSetUserIdByPhone(Victim victim) {
+        if(null==victim.phone||victim.phone.equals(""))
+            return victim;
 
         try {
             Victim victim1 = new Victim(telega.userIdByPhone(victim.phone), victim.groupName, victim.phone);
+            int i = config.victims.indexOf(victim);
             config.victims.remove(victim);
-            config.victims.add(victim1);
+            config.victims.add(i, victim1);
+            return victim1;
         } catch (TdApiException e) {
             e.printStackTrace();
+            return victim;
         }
     }
 
@@ -313,9 +315,9 @@ public class Router {
 
         //Особенности реализации выдачи истории Телеги
         if(outgoingCount>0){
-            outgoingCount=victim.tailOutgoingCount;
             if(victim.tailOutgoingCount<outgoingCount)
                 victim.tailOutgoingCount=outgoingCount;
+            outgoingCount=victim.tailOutgoingCount;
         }
 
         if(0==outgoingCount) {
