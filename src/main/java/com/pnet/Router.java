@@ -15,7 +15,9 @@ import java.util.logging.Logger;
 
 public class Router {
 
-    private static final int MAX_COPIES = 3;
+    private int getMaxReproduceCount(){
+      return Math.round(3/config.incomingMessages.size());
+    };
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
     public static final int USER_CACHE_EXPIRED_MINUTES = 10;
@@ -64,7 +66,7 @@ public class Router {
     }
 
     private void processIncomingMessages() {
-        while(config.incomingMessages.size()>0){
+        while(config.incomingMessages.size()>0){ //TODO: проверка isStopped()
             processMessage(config.incomingMessages.get(0));
         }
     }
@@ -219,6 +221,12 @@ public class Router {
             return false;
         if(checkArchivate(victim))
             return false;
+
+        if(0 == getMaxReproduceCount()){
+            publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
+            return true;
+        }
+
         try {
             if(!isVictimSuitable(victim, msg))
                 return false;
@@ -239,8 +247,8 @@ public class Router {
             e.printStackTrace();
         }
 
-        if(msg.getReproducedCount()>=MAX_COPIES){
-            publication.publishReproduced(msg, config.victims);
+        if(msg.getReproducedCount() >= getMaxReproduceCount()){
+            publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
             return true;
         }
         return false;

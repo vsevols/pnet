@@ -8,7 +8,6 @@ import it.tdlight.tdlib.TdApi;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.Assert;
 
 class PublicationServiceTest extends AbstractPNetTest{
 
@@ -42,7 +41,7 @@ class PublicationServiceTest extends AbstractPNetTest{
         victims.add(Config.TEST_VICTIM);
         publicationService.publish(routingMessage, victims);
         routingMessage.reproducedTo.add(victims.get(0).id);
-        publicationService.publishReproduced(routingMessage, victims);
+        publicationService.publishReproduced(routingMessage, victims, config.incomingMessages.size());
 
         //TODO: Assert.doesNotContain(publishedMessage.getText(),"Unknown");
     }
