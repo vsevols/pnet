@@ -22,7 +22,7 @@ class VictimListTest {
 
     @Test
     void getOrDefault() {
-        victims.add(new Victim(123, ""));
+        victims.add(new Victim(123, "", ""));
         //Explicit boxing has meaning in this test
         Victim victim = victims.getOrDefault(new Integer(123), null);
         assertEquals(victim.id, 123);

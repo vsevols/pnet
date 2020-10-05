@@ -198,7 +198,7 @@ public class Router {
             }
             for (Integer member : members) {
                 if(!config.victims.containsKey(member)) {
-                    config.victims.put(member, new Victim(member, superGroupName));
+                    config.victims.put(member, new Victim(member, superGroupName, ""));
                     wasAdded = true;
                 }
             }
@@ -261,7 +261,7 @@ public class Router {
             return;
 
         try {
-            Victim victim1 = new Victim(telega.userIdByPhone(victim.phone), victim.groupName);
+            Victim victim1 = new Victim(telega.userIdByPhone(victim.phone), victim.groupName, victim.phone);
             config.victims.remove(victim);
             config.victims.add(victim1);
         } catch (TdApiException e) {

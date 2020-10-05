@@ -41,7 +41,7 @@ class PublicationServiceTest extends AbstractPNetTest{
         victims.add(Config.TEST_VICTIM);
         publicationService.publish(routingMessage, victims);
         routingMessage.reproducedTo.add(victims.get(0).id);
-        publicationService.publishReproduced(routingMessage, victims, config.incomingMessages.size());
+        publicationService.publishReproduced(routingMessage, victims, 0);
 
         //TODO: Assert.doesNotContain(publishedMessage.getText(),"Unknown");
     }
