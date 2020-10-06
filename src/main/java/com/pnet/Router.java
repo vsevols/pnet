@@ -17,9 +17,9 @@ public class Router {
 
 
     private int getMaxReproduceCount(){
-
-        final int FACTOR = 3;
-        return config.incomingMessages.size()>0?Math.round(FACTOR /config.incomingMessages.size()):FACTOR;
+        final int REPRODUCE_FACTOR = 4;
+        return config.incomingMessages.size()>0?
+                Math.round(REPRODUCE_FACTOR /config.incomingMessages.size()):REPRODUCE_FACTOR;
     };
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
@@ -108,6 +108,10 @@ public class Router {
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
+        Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
+        if(null!=victim)
+            victim.tailOutgoingCount=0;
+
         save();
 
         //Не удаляем сообщение из бэкап-очереди, т.к. тесты не добавляют его в основной конфиг
@@ -286,6 +290,7 @@ public class Router {
                     msg, victimPrintInfo(victim)));
             if(!Debug.debug.dontReallyReproduceMessages)
                 telega.sendMessage(victim.id, msg.getText());
+            victim.tailOutgoingCount++;
             msg.setReproducedCount(msg.getReproducedCount()+1);
             msg.reproducedTo.add(victim.id);
             save();
