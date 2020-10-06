@@ -15,8 +15,11 @@ import java.util.logging.Logger;
 
 public class Router {
 
+
     private int getMaxReproduceCount(){
-      return config.incomingMessages.size()>0?Math.round(4/config.incomingMessages.size()):4;
+
+        final int FACTOR = 3;
+        return config.incomingMessages.size()>0?Math.round(FACTOR /config.incomingMessages.size()):FACTOR;
     };
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
@@ -31,12 +34,27 @@ public class Router {
         load();
         telega = new Telega();
         telega.init();
-        telega.onMessage = msg -> messageRegister(msg);
+        telega.onMessage = new OnMessageHandler() {
+            @Override
+            public boolean onMessage(Message msg) {
+                return messageRegister(msg);
+            }
+
+            @Override
+            public void onMessageSendingFailedFlood(long chatId) {
+                MessageSendingFailedFlood(chatId);
+            }
+        };
         victimService=new VictimService(telega);
         publication=new PublicationService(telega, victimService,
                 Debug.debug.isTesting?
                         telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK).chatId:
                         telega.checkChatInviteLink(Config.OBSERVERS_CHAT_INVITELINK).chatId);
+    }
+
+    private void MessageSendingFailedFlood(long chatId) {
+        Victim victim = config.victims.getByKey(Math.toIntExact(chatId));
+        victim.isSendingFailedFlood=true;
     }
 
 
@@ -345,7 +363,8 @@ public class Router {
             if(victim.tailOutgoingCount<outgoingCount)
                 victim.tailOutgoingCount=outgoingCount;
             outgoingCount=victim.tailOutgoingCount;
-        }
+        }else
+            victim.tailOutgoingCount=outgoingCount;
 
         if(0==outgoingCount) {
             return true;
@@ -372,7 +391,12 @@ public class Router {
     }
 
     private boolean checkArchivate(Victim victim) {
-        //TODO: здесь, возможно прийдётся подменять victims, или, лучше: изменить цикл на i-deletedOffset
+        if(victim.isSendingFailedFlood) {
+            config.victimsArchive.put(victim.id, victim);
+            config.victims.remove(victim);
+            save();
+            return true;
+        }
         return false;
     }
 }

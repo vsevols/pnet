@@ -13,6 +13,7 @@ public class Victim {
     public boolean isRegularNotScam;
     public final String phone;
     public int tailOutgoingCount;
+    public boolean isSendingFailedFlood;
 
     public static int getKey(Victim victim) {
         return victim.id;

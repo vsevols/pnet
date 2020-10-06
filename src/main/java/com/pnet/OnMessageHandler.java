@@ -4,4 +4,5 @@ import com.pnet.abstractions.Message;
 
 public interface OnMessageHandler {
     boolean onMessage(Message msg);
+    void onMessageSendingFailedFlood(long chatId);
 }

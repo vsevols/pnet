@@ -1,6 +1,7 @@
 package com.pnet;
 
 import com.pnet.abstractions.Message;
+import com.pnet.abstractions.User;
 import com.pnet.routing.MessageImpl;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.pnet.TestingUtils.getLocalTestsDataPath;
+import static com.pnet.util.PNSystem.UnsupportedOperation;
 import static java.lang.Thread.sleep;
 
 public class TelegaTest {
@@ -54,6 +56,11 @@ public class TelegaTest {
                     result[0] =msg;
 
                 return null!=result[0];
+            }
+
+            @Override
+            public void onMessageSendingFailedFlood(long chatId) {
+                UnsupportedOperation(this);
             }
         };
         telega.sendMessage(Config.ACCOUNT_PHONE, text);
@@ -146,6 +153,12 @@ public class TelegaTest {
         int id = Math.toIntExact(chatInviteLinkInfo.chatId);
         List<Integer> supergroupMembers = telega.getSupergroupMembers(chatInviteLinkInfo.title);
         supergroupMembers = telega.getSupergroupMembers(id, 0, 200);
+    }
+
+    @Disabled
+    @Test
+    void scratch2(){
+        User user = telega.tryObtainUser(Config.TEST_USERID_400ERROR, Config.TMP_VICTIM_GROUP_NAME);
     }
 
 }

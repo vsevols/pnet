@@ -397,6 +397,12 @@ public class Telega {
             case TdApi.UpdateNewMessage.CONSTRUCTOR:
                 incomingMessageProcess(((TdApi.UpdateNewMessage)object).message, true);
                 break;
+            case TdApi.UpdateMessageSendFailed.CONSTRUCTOR:
+                TdApi.UpdateMessageSendFailed sendFailed = (TdApi.UpdateMessageSendFailed) object;
+                if(400==sendFailed.errorCode) {
+                    onMessage.onMessageSendingFailedFlood(sendFailed.message.chatId);
+                    break;
+                }
                 /*
             case TdApi.Error.CONSTRUCTOR:
                 print("TdApi error: "+((TdApi.Error)object).message);
