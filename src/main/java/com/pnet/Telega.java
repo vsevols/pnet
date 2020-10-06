@@ -665,7 +665,7 @@ public class Telega {
         }
     }
 
-    private List<Integer> getSupergroupMembers(int id, int offset, int limit) throws TdApiException {
+    List<Integer> getSupergroupMembers(int id, int offset, int limit) throws TdApiException {
         ArrayList<Integer> result = new ArrayList<>();
         client.send(new TdApi.GetSupergroupMembers(id, null, offset, limit),
                 new TypedResultHandler<TdApi.ChatMembers>(new TdApi.ChatMembers()) {
@@ -807,10 +807,10 @@ public class Telega {
         client.syncRequest(new TdApi.CreateBasicGroupChat(chatId, true), new TdApi.Chat());
     }
 
-    public long checkChatInviteLink(String link) throws Exception {
+    public TdApi.ChatInviteLinkInfo checkChatInviteLink(String link) throws Exception {
         try {
             return client.syncRequest
-                    (new TdApi.CheckChatInviteLink(link), new TdApi.ChatInviteLinkInfo()).chatId;
+                    (new TdApi.CheckChatInviteLink(link), new TdApi.ChatInviteLinkInfo());
         } catch (TdApiException e) {
             throw new Exception(e);
         }

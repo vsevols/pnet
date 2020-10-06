@@ -6,6 +6,7 @@ import com.pnet.routing.MessageImpl;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
+import it.tdlight.tdlib.TdApi;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ import java.util.logging.Logger;
 public class Router {
 
     private int getMaxReproduceCount(){
-      return config.incomingMessages.size()>0?Math.round(3/config.incomingMessages.size()):3;
+      return config.incomingMessages.size()>0?Math.round(4/config.incomingMessages.size()):4;
     };
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
@@ -34,8 +35,8 @@ public class Router {
         victimService=new VictimService(telega);
         publication=new PublicationService(telega, victimService,
                 Debug.debug.isTesting?
-                        telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK):
-                        telega.checkChatInviteLink(Config.OBSERVERS_CHAT_INVITELINK));
+                        telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK).chatId:
+                        telega.checkChatInviteLink(Config.OBSERVERS_CHAT_INVITELINK).chatId);
     }
 
 
@@ -203,6 +204,32 @@ public class Router {
             }
         }
         save();
+        return wasAdded||addMoreVictimsBySupergroupLinks();
+    }
+
+    private boolean addMoreVictimsBySupergroupLinks() {
+        boolean wasAdded = false;
+        for (String link :
+                Config.superGroupLinks) {
+
+            TdApi.ChatInviteLinkInfo chatInviteLinkInfo = null;
+
+            try {
+                chatInviteLinkInfo = telega.checkChatInviteLink(link);
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+
+            for (int member :
+                    chatInviteLinkInfo.memberUserIds) {
+                if (!config.victims.containsKey(member)) {
+                    config.victims.put(member, new Victim(member, "", ""));
+                    wasAdded = true;
+                }
+            }
+        }
+
         return wasAdded;
     }
 
@@ -298,7 +325,7 @@ public class Router {
     private boolean noResponseTimeout(Victim victim, RoutingMessage msg) {
         List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
 
-        if(msg.isGreeting()&&chatHistory.size()>0)
+        if(msg.isGreeting()&&(chatHistory.size()>0||victim.tailOutgoingCount>0))
             return false;
 
         int outgoingCount=0;
@@ -314,7 +341,7 @@ public class Router {
         }
 
         //Особенности реализации выдачи истории Телеги
-        if(outgoingCount>0){
+        if(outgoingCount==chatHistory.size()){
             if(victim.tailOutgoingCount<outgoingCount)
                 victim.tailOutgoingCount=outgoingCount;
             outgoingCount=victim.tailOutgoingCount;

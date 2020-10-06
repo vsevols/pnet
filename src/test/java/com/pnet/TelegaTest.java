@@ -6,6 +6,7 @@ import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
 import com.pnet.util.PersistentDataService;
+import it.tdlight.tdlib.TdApi;
 import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -123,7 +124,7 @@ public class TelegaTest {
         //telega.getChatHistory(message.getSenderUserId(), message.getId(), 0, 1, true);
         //telega.forwardMessage(message, Config.TEST_OUTBOUND_CHAT_ID);
         telega.forwardMessage(message,
-                telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK));
+                telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK).chatId);
     }
 
     @Test
@@ -136,4 +137,15 @@ public class TelegaTest {
     void isUserRegularNotScam() throws Exception {
         Assertions.assertTrue(telega.isUserRegularNotScam(924113501, Config.TEST_CHAT_NAME));
     }
+
+    @Disabled
+    @Test
+    void scratch() throws Exception, TdApiException {
+        TdApi.ChatInviteLinkInfo chatInviteLinkInfo = telega.checkChatInviteLink(Config.superGroupLinks.get(0));
+        telega.isUserRegularNotScam(chatInviteLinkInfo.memberUserIds[1], "");
+        int id = Math.toIntExact(chatInviteLinkInfo.chatId);
+        List<Integer> supergroupMembers = telega.getSupergroupMembers(chatInviteLinkInfo.title);
+        supergroupMembers = telega.getSupergroupMembers(id, 0, 200);
+    }
+
 }
