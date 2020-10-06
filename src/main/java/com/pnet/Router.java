@@ -219,10 +219,7 @@ public class Router {
                 return wasAdded;
             }
             for (Integer member : members) {
-                if(!config.victims.containsKey(member)) {
-                    config.victims.put(member, new Victim(member, superGroupName, ""));
-                    wasAdded = true;
-                }
+                wasAdded = victimAddifNew(member, superGroupName);
             }
         }
         save();
@@ -245,13 +242,19 @@ public class Router {
 
             for (int member :
                     chatInviteLinkInfo.memberUserIds) {
-                if (!config.victims.containsKey(member)) {
-                    config.victims.put(member, new Victim(member, "", ""));
-                    wasAdded = true;
-                }
+                wasAdded = victimAddifNew(member, "");
             }
         }
 
+        return wasAdded;
+    }
+
+    private boolean victimAddifNew(int userId, String s) {
+        boolean wasAdded = false;
+        if (!config.victims.containsKey(userId)&&!config.victimsArchive.containsKey(userId)) {
+            config.victims.put(userId, new Victim(userId, s, ""));
+            wasAdded = true;
+        }
         return wasAdded;
     }
 
