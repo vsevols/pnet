@@ -116,12 +116,21 @@ public class TelegaTest {
 
     @Test
     void givenContactInChatHistoryMessage_WhenCallIsUserRegularNotScam_ThenTrue() throws Exception, TdApiException {
+        boolean userRegularNotScam; //=
+                //telega.isUserRegularNotScam(Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, "");
+
         long chatId = telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK).chatId;
+
+        userRegularNotScam =
+                telega.isUserRegularNotScam(Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, "");
 
         TdApi.Messages chatHistory = telega.getChatHistory(
                 //getSuperGroupId(telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK)),
                 chatId,
                 0, 0, 100);
+
+        userRegularNotScam =
+                telega.isUserRegularNotScam(Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, "");
 
         TdApi.Contact contact=null;
         for (int i = 0; i <chatHistory.messages.length; i++) {

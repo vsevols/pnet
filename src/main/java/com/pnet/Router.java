@@ -78,6 +78,7 @@ public class Router {
 
     private void processLaunched() {
         addMoreVictimsBySupergroupLink(Config.OBSERVERS_CHAT_INVITELINK, true);
+        victimAddifNew(Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, "", true);
     }
 
     private boolean isStopped() {
@@ -111,6 +112,8 @@ public class Router {
             return true;
         if(msg.isOutgoing())
             return true;
+        if(processAdminMessage(msg))
+            return true;
 
         try {
             config.incomingMessages.add(RoutingMessage.fromMessage(msg));
@@ -125,6 +128,11 @@ public class Router {
 
         //Не удаляем сообщение из бэкап-очереди, т.к. тесты не добавляют его в основной конфиг
         return !Debug.debug.isTesting;
+    }
+
+    private boolean processAdminMessage(Message msg) {
+        //TODO: msg.attachedContact
+        return false;
     }
 
     private void logInfo(String message){
