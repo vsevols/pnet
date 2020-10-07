@@ -686,7 +686,7 @@ public class Telega {
         return result;
     }
 
-    public List<Message> getChatHistory(int userId, long fromMessageId, int offset, int limit) {
+    public List<Message> getUserChatHistory(int userId, long fromMessageId, int offset, int limit) {
         TdApi.Messages result;
         try {
             getContacts();
@@ -698,8 +698,7 @@ public class Telega {
             //При задержке 500 отваливается на пакетном запуске тестов
             delayProcess();
 
-            result = client.syncRequest(
-                    new TdApi.GetChatHistory(userId, fromMessageId, offset, limit, true), new TdApi.Messages());
+            result = getChatHistory((long)userId, fromMessageId, offset, limit);
         } catch (TdApiException e) {
             e.printStackTrace();
             return new ArrayList<Message>();
@@ -710,6 +709,13 @@ public class Telega {
                 add(new MessageImpl(result.messages[i]));
             }
         }};
+    }
+
+    public TdApi.Messages getChatHistory(long chatId, long fromMessageId, int offset, int limit) throws TdApiException {
+        TdApi.Messages result;
+        result = client.syncRequest(
+                new TdApi.GetChatHistory(chatId, fromMessageId, offset, limit, true), new TdApi.Messages());
+        return result;
     }
 
     private void delayProcess() {

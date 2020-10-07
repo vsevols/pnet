@@ -378,7 +378,7 @@ public class Router {
     }
 
     private boolean noResponseTimeout(Victim victim, RoutingMessage msg) {
-        List<Message> chatHistory = telega.getChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
+        List<Message> chatHistory = telega.getUserChatHistory(victim.id, 0, 0, MAX_MY_MONOLOG_MESSAGES);
 
         if(msg.isGreeting()&&(chatHistory.size()>0||victim.tailOutgoingCount>0))
             return false;

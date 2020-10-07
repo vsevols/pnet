@@ -12,7 +12,6 @@ import it.tdlight.tdlight.utils.CantLoadLibrary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.*;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -106,13 +105,50 @@ public class TelegaTest {
     @Test
     void givenGetMe_WhenGetChatHistory_ThenHistorySizeNotEquals0() throws Exception {
         int id = telega.getMe();
-        List<Message> chatHistory = telega.getChatHistory(id,0, 0, 10);
+        List<Message> chatHistory = telega.getUserChatHistory(id,0, 0, 10);
         Assertions.assertNotEquals(0, chatHistory.size());
     }
     @Test
     void givenTEST_OUTBOUND_USER_ID_WhenGetChatHistory_ThenHistorySizeNotEquals0() throws Exception {
-        List<Message> chatHistory = telega.getChatHistory(Config.TEST_OUTBOUND_USER_ID, 0, 0, 10);
+        List<Message> chatHistory = telega.getUserChatHistory(Config.TEST_OUTBOUND_USER_ID, 0, 0, 10);
         Assertions.assertNotEquals(0, chatHistory.size());
+    }
+
+    @Test
+    void givenContactInChatHistoryMessage_WhenCallIsUserRegularNotScam_ThenTrue() throws Exception, TdApiException {
+        long chatId = telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK).chatId;
+
+        TdApi.Messages chatHistory = telega.getChatHistory(
+                //getSuperGroupId(telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK)),
+                chatId,
+                0, 0, 100);
+
+        TdApi.Contact contact=null;
+        for (int i = 0; i <chatHistory.messages.length; i++) {
+            contact = tryContactFromMessage(chatHistory.messages[i]);
+            if(null!=contact)
+                break;
+        }
+
+        Assertions.assertTrue(telega.isUserRegularNotScam(contact.userId, ""));
+    }
+
+    private TdApi.Contact tryContactFromMessage(TdApi.Message message) {
+        if(message.content.getConstructor()==TdApi.MessageContact.CONSTRUCTOR)
+            return ((TdApi.MessageContact)message.content).contact;
+
+        return null;
+    }
+
+    private int getSuperGroupId(TdApi.ChatInviteLinkInfo checkChatInviteLink) {
+        switch (checkChatInviteLink.type.getConstructor()) {
+            case TdApi.ChatTypeSupergroup.CONSTRUCTOR:
+                return ((TdApi.ChatTypeSupergroup) checkChatInviteLink.type).supergroupId;
+            case TdApi.ChatTypeBasicGroup.CONSTRUCTOR:
+                return ((TdApi.ChatTypeBasicGroup) checkChatInviteLink.type).basicGroupId;
+        }
+        UnsupportedOperation(checkChatInviteLink.type.getClass().getTypeName());
+        return 0;
     }
 
     @Test
