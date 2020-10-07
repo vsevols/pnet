@@ -41,7 +41,9 @@ public class KeyValueList<K, V> extends AbstractList<V> {
     }
 
     public void put(K key, V value, boolean toBeginning) {
+        if(!toBeginning)
         list.add(value);
+        else list.add(0, value);
     }
 
     public V getByKey(K key) {

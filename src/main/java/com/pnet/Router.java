@@ -64,7 +64,7 @@ public class Router {
 
         while(!isStopped()){
             telega.process(20000);
-            if(isLaunched) {
+            if(!isLaunched) {
                 processLaunched();
                 isLaunched=true;
             }
@@ -78,8 +78,6 @@ public class Router {
 
     private void processLaunched() {
         addMoreVictimsBySupergroupLink(Config.OBSERVERS_CHAT_INVITELINK, true);
-        //Временно
-        addMoreVictimsBySupergroupLink(Config.superGroupLinks.get(0), true);
     }
 
     private boolean isStopped() {

@@ -164,13 +164,18 @@ public class TelegaTest {
     @Disabled
     @Test
     void scratch3() throws Exception, TdApiException {
-        TdApi.ChatInviteLinkInfo chatInviteLinkInfo = telega.checkChatInviteLink(Config.OBSERVERS_CHAT_INVITELINK);
+        //Успешно получает данные только первых 10 пользователей по ссылке на чат
+        TdApi.ChatInviteLinkInfo chatInviteLinkInfo = telega.checkChatInviteLink(
+                Config.superGroupLinks.get(0));
         //telega.isUserRegularNotScam(chatInviteLinkInfo.memberUserIds[2], "");
         int id=0;
         //int id = Math.toIntExact(chatInviteLinkInfo.chatId);
         id=((TdApi.ChatTypeSupergroup)chatInviteLinkInfo.type).supergroupId;
         //List<Integer> supergroupMembers = telega.getSupergroupMembers(chatInviteLinkInfo.title);
-        List<Integer> supergroupMembers2 = telega.getSupergroupMembers(id, 0, 200);
+        //List<Integer> supergroupMembers2 = telega.getSupergroupMembers(id, 0, 200);
+        for (int memberUserId : chatInviteLinkInfo.memberUserIds) {
+            telega.isUserRegularNotScam(memberUserId, "");//chatInviteLinkInfo.title);
+        }
     }
 
 }
