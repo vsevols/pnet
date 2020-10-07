@@ -14,7 +14,7 @@ class ConfigServiceTest {
     @Test
     void saveLoadConfig() throws IOException {
         Config config = Config.emptyConfig();
-        config.victims.put(123, new Victim(123, "", ""));
+        config.victims.put(123, new Victim(123, "", ""), false);
         config.incomingMessages.add(new RoutingMessage(
                 new com.pnet.routing.MessageImpl("testText"), false));
         ConfigService.saveConfig(Config.toDataPath("test.json"), config);

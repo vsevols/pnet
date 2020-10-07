@@ -6,7 +6,6 @@ import lombok.experimental.Delegate;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.List;
 
 @JsonIgnoreProperties({"empty"})
 @RequiredArgsConstructor
@@ -41,7 +40,7 @@ public class KeyValueList<K, V> extends AbstractList<V> {
         return indexOfKey(key)>=0;
     }
 
-    public void put(K key, V value) {
+    public void put(K key, V value, boolean toBeginning) {
         list.add(value);
     }
 

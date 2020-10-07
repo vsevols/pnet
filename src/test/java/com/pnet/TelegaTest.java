@@ -161,4 +161,16 @@ public class TelegaTest {
         User user = telega.tryObtainUser(Config.TEST_USERID_400ERROR, Config.TMP_VICTIM_GROUP_NAME);
     }
 
+    @Disabled
+    @Test
+    void scratch3() throws Exception, TdApiException {
+        TdApi.ChatInviteLinkInfo chatInviteLinkInfo = telega.checkChatInviteLink(Config.OBSERVERS_CHAT_INVITELINK);
+        //telega.isUserRegularNotScam(chatInviteLinkInfo.memberUserIds[2], "");
+        int id=0;
+        //int id = Math.toIntExact(chatInviteLinkInfo.chatId);
+        id=((TdApi.ChatTypeSupergroup)chatInviteLinkInfo.type).supergroupId;
+        //List<Integer> supergroupMembers = telega.getSupergroupMembers(chatInviteLinkInfo.title);
+        List<Integer> supergroupMembers2 = telega.getSupergroupMembers(id, 0, 200);
+    }
+
 }

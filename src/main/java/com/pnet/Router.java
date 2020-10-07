@@ -60,15 +60,24 @@ public class Router {
 
     public void run() {
         LocalDateTime startMoment = LocalDateTime.now();
+        boolean isLaunched=false;
 
         while(!isStopped()){
             telega.process(20000);
+            if(isLaunched) {
+                processLaunched();
+                isLaunched=true;
+            }
             processIncomingMessages();
             if(startMoment.plusSeconds(Debug.debug.noGreetingMessageTimeout?0:20).isBefore(LocalDateTime.now())
                     &&!Debug.debug.dontGenerateStartingMessages)
                 checkGenerateStartingMessage();
         }
 
+    }
+
+    private void processLaunched() {
+        addMoreVictimsBySupergroupLink(Config.OBSERVERS_CHAT_INVITELINK, true);
     }
 
     private boolean isStopped() {
@@ -209,6 +218,9 @@ public class Router {
 
     private boolean addMoreVictims(){
         boolean wasAdded = false;
+
+        wasAdded = addMoreVictimsBySupergroupLinks(true)||wasAdded;
+
         for (String superGroupName : Config.superGroupNames) {
             List<Integer> members;
             try {
@@ -219,40 +231,57 @@ public class Router {
                 return wasAdded;
             }
             for (Integer member : members) {
-                wasAdded = victimAddifNew(member, superGroupName);
+                wasAdded = victimAddifNew(member, superGroupName, false)||wasAdded;
             }
         }
         save();
-        return wasAdded||addMoreVictimsBySupergroupLinks();
+        return wasAdded;
     }
 
-    private boolean addMoreVictimsBySupergroupLinks() {
+    private boolean addMoreVictimsBySupergroupLinks(boolean toBeginning) {
         boolean wasAdded = false;
         for (String link :
                 Config.superGroupLinks) {
-
-            TdApi.ChatInviteLinkInfo chatInviteLinkInfo = null;
-
-            try {
-                chatInviteLinkInfo = telega.checkChatInviteLink(link);
-            } catch (Exception e) {
-                e.printStackTrace();
-                continue;
-            }
-
-            for (int member :
-                    chatInviteLinkInfo.memberUserIds) {
-                wasAdded = victimAddifNew(member, "");
-            }
+            wasAdded = addMoreVictimsBySupergroupLink(link, toBeginning)||wasAdded;
         }
 
         return wasAdded;
     }
 
-    private boolean victimAddifNew(int userId, String s) {
+    private boolean addMoreVictimsBySupergroupLink(String link, boolean toBeginning) {
+        boolean wasAdded = false;
+        TdApi.ChatInviteLinkInfo chatInviteLinkInfo = null;
+
+        try {
+            chatInviteLinkInfo = telega.checkChatInviteLink(link);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return wasAdded;
+        }
+
+
+        int id;
+        id=((TdApi.ChatTypeSupergroup)chatInviteLinkInfo.type).supergroupId;
+        //List<Integer> supergroupMembers = telega.getSupergroupMembers(chatInviteLinkInfo.title);
+        List<Integer> supergroupMembers = null;
+        try {
+            supergroupMembers = telega.getSupergroupMembers(id, 0, 200);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+            return wasAdded;
+        }
+
+        for (int member :
+                supergroupMembers) {
+            wasAdded = victimAddifNew(member, chatInviteLinkInfo.title, toBeginning);
+        }
+        return wasAdded;
+    }
+
+    private boolean victimAddifNew(int userId, String s, boolean toBeginning) {
         boolean wasAdded = false;
         if (!config.victims.containsKey(userId)&&!config.victimsArchive.containsKey(userId)) {
-            config.victims.put(userId, new Victim(userId, s, ""));
+            config.victims.put(userId, new Victim(userId, s, ""), toBeginning);
             wasAdded = true;
         }
         return wasAdded;
