@@ -90,7 +90,7 @@ public class Router {
     }
 
     private void checkGenerateStartingMessage() {
-        if(LocalDateTime.now().minusMinutes(3).isBefore(config.lastIncomingMessageMoment))
+        if(LocalDateTime.now().minusMinutes(60).isBefore(config.lastIncomingMessageMoment))
             return;
         processMessage(new RoutingMessage(
                 new MessageImpl("Здрасьте"), true));
@@ -400,10 +400,13 @@ public class Router {
 
     private boolean checkArchivate(Victim victim) {
         if(victim.isSendingFailedFlood) {
+            /*
             config.victimsArchive.put(victim.id, victim);
             config.victims.remove(victim);
             save();
             return true;
+
+             */
         }
         return false;
     }
