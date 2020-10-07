@@ -273,7 +273,7 @@ public class Router {
 
         for (int member :
                 supergroupMembers) {
-            wasAdded = victimAddifNew(member, chatInviteLinkInfo.title, toBeginning);
+            wasAdded = victimAddifNew(member, chatInviteLinkInfo.title, toBeginning)||wasAdded;
         }
         return wasAdded;
     }
