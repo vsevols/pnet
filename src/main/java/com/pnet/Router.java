@@ -79,6 +79,7 @@ public class Router {
     private void processLaunched() {
         addMoreVictimsBySupergroupLink(Config.OBSERVERS_CHAT_INVITELINK, true);
         victimAddifNew(Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, "", true);
+        save();
     }
 
     private boolean isStopped() {
@@ -350,6 +351,19 @@ public class Router {
             return victim;
 
         try {
+            telega.userIdByPhone(victim.phone);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
+        return victim;
+
+        //Дальнейший вызов конструктора не копирует все необходимые поля
+        /*
+
+        if(victim.getId()!=0)
+            return victim;
+
+        try {
             Victim victim1 = new Victim(telega.userIdByPhone(victim.phone), victim.groupName, victim.phone);
             int i = config.victims.indexOf(victim);
             config.victims.remove(victim);
@@ -359,6 +373,8 @@ public class Router {
             e.printStackTrace();
             return victim;
         }
+
+         */
     }
 
     private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
