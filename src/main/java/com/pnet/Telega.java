@@ -610,8 +610,11 @@ public class Telega {
 
         while((null==users.get(id))&&process(SYNC_TIMEOUT_MS));
         CachedUser cachedUser = users.get(id);
-        if(null==cachedUser)
-            throw new TimeoutException(String.format("obtainUser %s %s", id, superGroupName));
+        if(null==cachedUser){
+            //TODO: exists=false
+            //cachedUser=new CachedUser(id);
+            //users.put(cachedUser)
+        }
         return cachedUser;
     }
 
@@ -770,7 +773,8 @@ public class Telega {
 
     public boolean isUserRegularNotScam(int id, String superGroupName) throws Exception {
         TdApi.User user = obtainUser(id, superGroupName);
-        return (user.type.getConstructor()==TdApi.UserTypeRegular.CONSTRUCTOR)
+        return null!=user
+                &&user.type.getConstructor()==TdApi.UserTypeRegular.CONSTRUCTOR
                 &&!user.isScam;
     }
 

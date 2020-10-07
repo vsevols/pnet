@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 public class Router {
 
 
+    private boolean isStopped=false;
+
     private int getMaxReproduceCount(){
         final int REPRODUCE_FACTOR = 4;
         return config.incomingMessages.size()>0?
@@ -55,6 +57,7 @@ public class Router {
     private void MessageSendingFailedFlood(long chatId) {
         Victim victim = config.victims.getByKey(Math.toIntExact(chatId));
         victim.isSendingFailedFlood=true;
+        logInfo("MessageSendingFailedFlood:"+victimPrintInfo(victim));
     }
 
 
@@ -78,24 +81,34 @@ public class Router {
 
     private void processLaunched() {
         addMoreVictimsBySupergroupLink(Config.OBSERVERS_CHAT_INVITELINK, true);
-        victimAddifNew(Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, "", true);
+        victimAddByContactInChatHistoryLink(
+                Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, Config.TEST_OUTBOUND_CHAT_INVITELINK, true);
         save();
+    }
+
+    private void victimAddByContactInChatHistoryLink(int testOutboundUserIdFromChatmsgContact, String testOutboundChatInvitelink, boolean toBeginning) {
+        try {
+            telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        victimAddifNew(testOutboundUserIdFromChatmsgContact,"", toBeginning);
     }
 
     private boolean isStopped() {
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(System.in));
         try {
-            if(reader.ready())
-                return reader.readLine().equals("stop");
+            if(reader.ready()&&reader.readLine().equals("stop"))
+                isStopped=true;
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        return false;
+        return isStopped;
     }
 
     private void processIncomingMessages() {
-        while(config.incomingMessages.size()>0){ //TODO: проверка isStopped()
+        while(config.incomingMessages.size()>0&&!isStopped()){ //TODO: проверка isStopped()
             processMessage(config.incomingMessages.get(0));
         }
     }
@@ -179,7 +192,7 @@ public class Router {
             }
 
         }else if (!msg.isGreeting()){
-            config.incomingMessages.remove(msg);
+            incomingMessageArchivate(msg);
             return;
         }
 
