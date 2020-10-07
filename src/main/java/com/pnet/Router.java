@@ -57,6 +57,10 @@ public class Router {
     private void MessageSendingFailedFlood(long chatId) {
         Victim victim = config.victims.getByKey(Math.toIntExact(chatId));
         victim.isSendingFailedFlood=true;
+        if(victim.tailOutgoingCount>0)
+            victim.tailOutgoingCount--;
+
+        save();
         logInfo("MessageSendingFailedFlood:"+victimPrintInfo(victim));
     }
 
