@@ -18,7 +18,9 @@ public class Router {
 
     private boolean isStopped=false;
 
-    private int getMaxReproduceCount(){
+    private int getMaxReproduceCount(boolean isGreeting){
+        //if(isGreeting)
+        //    return 1;
         final int REPRODUCE_FACTOR = 4;
         return config.incomingMessages.size()>0?
                 Math.round(REPRODUCE_FACTOR /config.incomingMessages.size()):REPRODUCE_FACTOR;
@@ -120,8 +122,14 @@ public class Router {
     private void checkGenerateStartingMessage() {
         if(LocalDateTime.now().minusMinutes(60).isBefore(config.lastIncomingMessageMoment))
             return;
-        processMessage(new RoutingMessage(
-                new MessageImpl("Здрасьте"), true));
+        if(LocalDateTime.now().minusMinutes(60).isBefore(config.lastGreetingMessageMoment))
+            return;
+        try {
+            processMessage(new RoutingMessage(
+                    new MessageImpl("Здрасьте"), true));
+        }finally {
+            config.lastGreetingMessageMoment=LocalDateTime.now();
+        }
     }
 
     private boolean messageRegister(Message msg) {
@@ -328,7 +336,7 @@ public class Router {
         if(checkArchivate(victim))
             return false;
 
-        if(0 == getMaxReproduceCount()){
+        if(0 == getMaxReproduceCount(msg.isGreeting())){
             publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
             return true;
         }
@@ -356,7 +364,7 @@ public class Router {
             e.printStackTrace();
         }
 
-        if(msg.getReproducedCount() >= getMaxReproduceCount()){
+        if(msg.getReproducedCount() >= getMaxReproduceCount(msg.isGreeting())){
             publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
             return true;
         }

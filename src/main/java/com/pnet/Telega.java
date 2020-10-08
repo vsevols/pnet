@@ -594,7 +594,7 @@ public class Telega {
                 try {
                     getUser(id);
                 } catch (TdApiException e) {
-                    throw new Exception(e);
+                    throw new Exception("userId="+id, e);
                 }
             }
         }else if(users.get(id).isExpired(cacheExpiredMins)){
@@ -602,7 +602,7 @@ public class Telega {
             try {
                 getUser(id);
             } catch (TdApiException e) {
-                throw new Exception(e);
+                throw new Exception("userId="+id, e);
             }
             return obtainUser(id, superGroupName);
         }
