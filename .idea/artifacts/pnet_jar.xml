@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="pnet:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/pnet_jar</output-path>
+    <root id="archive" name="pnet_jar.jar">
+      <element id="module-output" name="pnet" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.9.10/jackson-core-2.9.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.12/lombok-1.18.12.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/it/tdlight/tdlight-natives-windows-amd64/1.1.19/tdlight-natives-windows-amd64-1.1.19.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/it/tdlight/tdlight-natives-linux-aarch64/1.1.15/tdlight-natives-linux-aarch64-1.1.15.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.9.10.6/jackson-databind-2.9.10.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/it/tdlight/tdlight-natives-osx-amd64/1.1.11/tdlight-natives-osx-amd64-1.1.11.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/it/tdlight/tdlight-java/3.168.13/tdlight-java-3.168.13.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/it/tdlight/tdlight-natives-linux-amd64/1.1.20/tdlight-natives-linux-amd64-1.1.20.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-annotations/2.9.10/jackson-annotations-2.9.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.10.2/jackson-datatype-jsr310-2.10.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

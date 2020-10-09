@@ -21,7 +21,7 @@ public class Router {
     private int getMaxReproduceCount(boolean isGreeting){
         //if(isGreeting)
         //    return 1;
-        final int REPRODUCE_FACTOR = 4;
+        final int REPRODUCE_FACTOR = 3;
         return config.incomingMessages.size()>0?
                 Math.round(REPRODUCE_FACTOR /config.incomingMessages.size()):REPRODUCE_FACTOR;
     };
