@@ -129,6 +129,7 @@ public class Router {
                     new MessageImpl("Здрасьте"), true));
         }finally {
             config.lastGreetingMessageMoment=LocalDateTime.now();
+            save();
         }
     }
 

@@ -11,7 +11,8 @@ public class VictimService {
         try {
             User user = telega.tryObtainUser(victim.getId(), victim.groupName);
             if(null!=user)
-                return String.format("%s %s", user.getFirstName(), user.getLastName());
+                return String.format("%s %s(%d)", user.getFirstName(), user.getLastName(),
+                        victim.tailOutgoingCount);
         } catch (Exception e) {
             e.printStackTrace();
         }
