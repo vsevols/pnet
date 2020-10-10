@@ -81,7 +81,7 @@ public class Router {
             processIncomingMessages();
             if(startMoment.plusSeconds(Debug.debug.noGreetingMessageTimeout?0:20).isBefore(LocalDateTime.now())
                     &&!Debug.debug.dontGenerateStartingMessages)
-                checkGenerateStartingMessage();
+                checkGenerateStartNewDialogMessage();
         }
 
     }
@@ -120,10 +120,8 @@ public class Router {
         }
     }
 
-    private void checkGenerateStartingMessage() {
-        if(LocalDateTime.now().minusMinutes(60).isBefore(config.lastIncomingMessageMoment))
-            return;
-        if(LocalDateTime.now().minusMinutes(60).isBefore(config.lastGreetingMessageMoment))
+    private void checkGenerateStartNewDialogMessage() {
+        if(!canStartNewDialogTimeoutReached())
             return;
         try {
             processMessage(new RoutingMessage(
@@ -411,10 +409,23 @@ public class Router {
             return false;
         if(!isRecentLastSeen(victim))
             return false;
+        if(!dialogExistsOrCanStartNew(victim))
+            return false;
         if(!noResponseTimeout(victim, msg))
             return false;
 
         return true;
+    }
+
+    private boolean dialogExistsOrCanStartNew(Victim victim) {
+        if(telega.getUserChatHistory(victim.id, 0, 0, 1).size()>0)
+            return true;
+        return canStartNewDialogTimeoutReached();
+
+    }
+
+    private boolean canStartNewDialogTimeoutReached() {
+        return config.lastGreetingMessageMoment.isBefore(LocalDateTime.now().minusMinutes(180));
     }
 
     private boolean isUserRegularNotScam(Victim victim) throws Exception {
