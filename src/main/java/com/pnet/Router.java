@@ -91,16 +91,35 @@ public class Router {
         victimAddByContactInChatHistoryLink(
                 Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, Config.TEST_OUTBOUND_CHAT_INVITELINK, true);
         save();
-    }
-
-    private void victimAddByContactInChatHistoryLink(int testOutboundUserIdFromChatmsgContact, String testOutboundChatInvitelink, boolean toBeginning) {
         try {
-            telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK);
+            telega.getContacts();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void victimAddByContactInChatHistoryLink(int userId, String link, boolean toBeginning) {
+        try {
+            telega.joinChatByInviteLink(link);
+        } catch (Exception e) {
+        }
+
+        TdApi.ChatInviteLinkInfo chatInviteLinkInfo=null;
+        try {
+            chatInviteLinkInfo = telega.checkChatInviteLink(Config.TEST_OUTBOUND_CHAT_INVITELINK);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        TdApi.Messages chatHistory=null;
+        try {
+            chatHistory = telega.getChatHistory(chatInviteLinkInfo.chatId, 0, 0, Integer.MAX_VALUE);
+        } catch (TdApiException e) {
+            e.printStackTrace();
+        }
+
         //TODO: Брать userId из истории
-        victimAddifNew(testOutboundUserIdFromChatmsgContact,"", toBeginning, true);
+        victimAddifNew(userId,"", toBeginning, true);
     }
 
     private boolean isStopped() {
@@ -109,9 +128,17 @@ public class Router {
         try {
             if(reader.ready()&&reader.readLine().equals("stop"))
                 isStopped=true;
+            File stopFile = new File(Config.toDataPath("stop"));
+            if(stopFile.isFile()) {
+                isStopped = true;
+                stopFile.delete();
+            }
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
+        if(isStopped)
+            logInfo("terminating...");
+
         return isStopped;
     }
 
@@ -126,7 +153,7 @@ public class Router {
             return;
         try {
             processMessage(new RoutingMessage(
-                    new MessageImpl("Здрасьте"), true));
+                    new MessageImpl("Хеллов"), true));
         }finally {
             config.lastGreetingMessageMoment=LocalDateTime.now();
             save();
@@ -163,7 +190,11 @@ public class Router {
     }
 
     private void logInfo(String message){
-        Logger.getGlobal().info(message);
+        getLogger().info(message);
+    }
+
+    private Logger getLogger() {
+        return Logger.getGlobal();
     }
 
     private void processMessage(RoutingMessage msg) {
@@ -172,51 +203,60 @@ public class Router {
         //TODO: инициализировать дату кеш-элемента датой сообщения, протестировать
         //setUserLastSeen(msg.getSenderUserId(), msg.getLocalDateTime());
 
-        Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
-        //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
-        //UPD: Возможен спам. Лучше складывать в отдельную коллекцию для ручного аппрува
+        try{
+            logInfo(String.format("msgId %d processing started", msg.getId()));
 
-        //TODO: (?) Переместить в com.pnet.Router.incomingMessage
-        if (null!=victim){
-            boolean userRegularNotScam = false;
-            try {
-                userRegularNotScam = isUserRegularNotScam(victim);
-                victim.isRegularNotScam=userRegularNotScam;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if(userRegularNotScam) {
-                config.victims.moveToFirst(victim.id);
-                config.lastIncomingMessageMoment = LocalDateTime.now();
-            }else{
-                logInfo(String.format("Deleting victim:\n%s\nthat said:\n%s",
-                        victimPrintInfo(victim), msg));
-                config.victims.remove(victim);
-                config.incomingMessages.remove(msg);
-            }
-            save();
+            Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
+            //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
+            //UPD: Возможен спам. Лучше складывать в отдельную коллекцию для ручного аппрува
 
-            if(userRegularNotScam) {
+            //TODO: (?) Переместить в com.pnet.Router.incomingMessage
+            if (null != victim) {
+                boolean userRegularNotScam = false;
                 try {
-                    publication.publish(msg, config.victims);
+                    userRegularNotScam = isUserRegularNotScam(victim);
+                    victim.isRegularNotScam = userRegularNotScam;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
+                if (userRegularNotScam) {
+                    config.victims.moveToFirst(victim.id);
+                    config.lastIncomingMessageMoment = LocalDateTime.now();
+                } else {
+                    logInfo(String.format("Deleting victim:\n%s\nthat said:\n%s",
+                            victimPrintInfo(victim), msg));
+                    config.victims.remove(victim);
+                    config.incomingMessages.remove(msg);
+                }
+                save();
 
-        }else if (!msg.isGreeting()){
-            incomingMessageArchivate(msg);
-            return;
-        }
+                if (userRegularNotScam) {
+                    try {
+                        publication.publish(msg, config.victims);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
 
-        for (int i = 0; i < config.victims.size(); i++) {
-            victim=config.victims.get(i);
-            if(victimProcess(victim, msg)){
+            } else if (!msg.isGreeting()) {
                 incomingMessageArchivate(msg);
                 return;
+            }
+
+            for (int i = 0; i < config.victims.size(); i++) {
+                victim = config.victims.get(i);
+                if (victimProcess(victim, msg)) {
+                    incomingMessageArchivate(msg);
+                    return;
+                }
+
+                if (isStopped())
+                    return;
+            }
+        }finally{
+            logInfo(String.format("msgId %d processing finished", msg.getId()));
         }
 
-        }
         if(!Debug.debug.dontAddVictims&&addMoreVictims())
             processMessage(msg);
     }
@@ -262,8 +302,7 @@ public class Router {
                 members = telega.getSupergroupMembers(superGroupName);
             } catch (Exception e) {
                 e.printStackTrace();
-                save();
-                return wasAdded;
+                continue;
             }
             for (Integer member : members) {
                 wasAdded = victimAddifNew(member, superGroupName, false, false)
@@ -368,10 +407,11 @@ public class Router {
         victim=victimSetUserIdByPhone(victim);
 
         try {
+            telega.obtainUser(victim.getId(), victim.groupName);
             if(!isVictimSuitable(victim, msg))
                 return false;
         } catch (Exception e) {
-            e.printStackTrace();
+            getLogger().finest(String.format("victim.id=%d exception: %s", victim.getId(), e.getMessage()));
             return false;
         }
 
@@ -430,7 +470,7 @@ public class Router {
     private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
         if(isMe(victim))
             return false;
-        if(victim.forceStartNewDialog)
+        if(victim.forceStartNewDialog&&!dialogNotEmpty(victim))
             return true;
 
         if(!isUserRegularNotScam(victim))

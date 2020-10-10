@@ -626,7 +626,7 @@ public class Telega {
         return cachedUser;
     }
 
-    private CachedUser obtainUser(int id, String superGroupName) throws Exception {
+    public CachedUser obtainUser(int id, String superGroupName) throws Exception {
         return obtainUser(id, superGroupName, Integer.MAX_VALUE);
     }
 
@@ -700,7 +700,6 @@ public class Telega {
     public List<Message> getUserChatHistory(int userId, long fromMessageId, int offset, int limit) {
         TdApi.Messages result;
         try {
-            getContacts();
             createPrivateChat(userId);
 
             //После получения TdApi.User:
@@ -735,8 +734,12 @@ public class Telega {
             process(countDown.getLeftInt());
     }
 
-    private void getContacts() throws TdApiException {
-        client.syncRequest(new TdApi.GetContacts(), new TdApi.Users());
+    public void getContacts() throws Exception {
+        try {
+            client.syncRequest(new TdApi.GetContacts(), new TdApi.Users());
+        } catch (TdApiException e) {
+            throw new Exception();
+        }
     }
 
     public Chat tryChatByUserId(int id) {
