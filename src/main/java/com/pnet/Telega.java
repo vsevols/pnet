@@ -589,7 +589,15 @@ public class Telega {
     private CachedUser obtainUser(int id, String superGroupName, int cacheExpiredMins) throws Exception {
         if(null==users.get(id)){
             if(null!=superGroupName&&!"".equals(superGroupName))
-                getSupergroupMembers(superGroupName);
+                try {
+                    getSupergroupMembers(superGroupName);
+                } catch (Exception e) {
+                    try {
+                        getUser(id);
+                    } catch (TdApiException tdApiException) {
+                        throw new Exception("userId="+id, e);
+                    }
+                }
             else {
                 try {
                     getUser(id);
@@ -666,7 +674,7 @@ public class Telega {
             try {
                 result2 = getSupergroupMembers(id, offset, LIMIT);
             } catch (TdApiException e) {
-                throw new Exception(e);
+                throw new Exception("supergroupname="+name, e);
             }
             result.addAll(result2);
             if(result2.size()<LIMIT)
