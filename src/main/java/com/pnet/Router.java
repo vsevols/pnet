@@ -76,6 +76,7 @@ public class Router {
             if(!isLaunched) {
                 processLaunched();
                 isLaunched=true;
+                logInfo("Routing launched");
             }
             processIncomingMessages();
             if(startMoment.plusSeconds(Debug.debug.noGreetingMessageTimeout?0:20).isBefore(LocalDateTime.now())
