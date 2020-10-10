@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class TestingUtils {
     public static String getLocalTestsDataPath(String path) {
-        return Config.toDataPath("tests/"+path);
+        return"d:\\pnetData\\tests\\"+path;
     }
 
     public static <T> T loadObject(
