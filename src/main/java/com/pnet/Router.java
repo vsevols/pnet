@@ -83,11 +83,11 @@ public class Router {
                     &&!Debug.debug.dontGenerateStartingMessages)
                 checkGenerateStartNewDialogMessage();
         }
-
+        telega.close();
     }
 
     private void processLaunched() {
-        addMoreVictimsBySupergroupLink(Config.OBSERVERS_CHAT_INVITELINK, true);
+        addMoreVictimsByJoinViaSupergroupLink(Config.OBSERVERS_CHAT_INVITELINK, true);
         victimAddByContactInChatHistoryLink(
                 Config.TEST_OUTBOUND_USER_ID_FROM_CHATMSG_CONTACT, Config.TEST_OUTBOUND_CHAT_INVITELINK, true);
         save();
@@ -99,7 +99,8 @@ public class Router {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        victimAddifNew(testOutboundUserIdFromChatmsgContact,"", toBeginning);
+        //TODO: Брать userId из истории
+        victimAddifNew(testOutboundUserIdFromChatmsgContact,"", toBeginning, true);
     }
 
     private boolean isStopped() {
@@ -253,7 +254,7 @@ public class Router {
     private boolean addMoreVictims(){
         boolean wasAdded = false;
 
-        wasAdded = addMoreVictimsBySupergroupLinks(true)||wasAdded;
+        //wasAdded = addMoreVictimsByJoinViaSupergroupLinks(true)||wasAdded;
 
         for (String superGroupName : Config.superGroupNames) {
             List<Integer> members;
@@ -265,41 +266,58 @@ public class Router {
                 return wasAdded;
             }
             for (Integer member : members) {
-                wasAdded = victimAddifNew(member, superGroupName, false)||wasAdded;
+                wasAdded = victimAddifNew(member, superGroupName, false, false)
+                        ||wasAdded;
             }
         }
         save();
         return wasAdded;
     }
 
-    private boolean addMoreVictimsBySupergroupLinks(boolean toBeginning) {
+    private boolean addMoreVictimsByJoinViaSupergroupLinks(boolean toBeginning) {
         boolean wasAdded = false;
         for (String link :
                 Config.superGroupLinks) {
-            wasAdded = addMoreVictimsBySupergroupLink(link, toBeginning)||wasAdded;
+            wasAdded = addMoreVictimsByJoinViaSupergroupLink(link, toBeginning)||wasAdded;
         }
 
         return wasAdded;
     }
 
-    private boolean addMoreVictimsBySupergroupLink(String link, boolean toBeginning) {
+    private boolean addMoreVictimsByJoinViaSupergroupLink(String link, boolean toBeginning) {
         boolean wasAdded = false;
-        TdApi.ChatInviteLinkInfo chatInviteLinkInfo = null;
+        TdApi.Chat chat=null;
 
         try {
-            chatInviteLinkInfo = telega.checkChatInviteLink(link);
+            chat=telega.joinChatByInviteLink(link);
         } catch (Exception e) {
             e.printStackTrace();
             return wasAdded;
         }
 
+        int supergroupId;
+        String chatTitle;
 
-        int id;
-        id=((TdApi.ChatTypeSupergroup)chatInviteLinkInfo.type).supergroupId;
+        if(null==chat){
+            try {
+                TdApi.ChatInviteLinkInfo chatInviteLinkInfo = telega.checkChatInviteLink(link);
+                TdApi.ChatTypeSupergroup chatTypeSupergroup = (TdApi.ChatTypeSupergroup) chatInviteLinkInfo.type;
+                supergroupId= chatTypeSupergroup.supergroupId;
+                chatTitle=chatInviteLinkInfo.title;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return wasAdded;
+            }
+        }else{
+            supergroupId=((TdApi.ChatTypeSupergroup)chat.type).supergroupId;
+            chatTitle=chat.title;
+        }
+
+        //supergroupId=chat.supergroupId;
         //List<Integer> supergroupMembers = telega.getSupergroupMembers(chatInviteLinkInfo.title);
         List<Integer> supergroupMembers = null;
         try {
-            supergroupMembers = telega.getSupergroupMembers(id, 0, 200);
+            supergroupMembers = telega.getSupergroupMembers(supergroupId, 0, 200);
         } catch (TdApiException e) {
             e.printStackTrace();
             return wasAdded;
@@ -307,17 +325,23 @@ public class Router {
 
         for (int member :
                 supergroupMembers) {
-            wasAdded = victimAddifNew(member, chatInviteLinkInfo.title, toBeginning)||wasAdded;
+            wasAdded = victimAddifNew(member, chatTitle, toBeginning, false)||wasAdded;
         }
         return wasAdded;
     }
 
-    private boolean victimAddifNew(int userId, String s, boolean toBeginning) {
+    private boolean victimAddifNew(int userId, String s, boolean toBeginning, boolean forceStartNewDialog) {
         boolean wasAdded = false;
+        Victim victim;
         if (!config.victims.containsKey(userId)&&!config.victimsArchive.containsKey(userId)) {
-            config.victims.put(userId, new Victim(userId, s, ""), toBeginning);
+            victim = new Victim(userId, s, "");
+            victim.forceStartNewDialog=forceStartNewDialog;
+            config.victims.put(userId, victim, toBeginning);
             wasAdded = true;
         }
+
+        if(forceStartNewDialog&&null!=(victim=config.victims.getOrDefault(userId, null)))
+            victim.forceStartNewDialog=forceStartNewDialog;
         return wasAdded;
     }
 
@@ -356,6 +380,7 @@ public class Router {
                     msg, victimPrintInfo(victim)));
             if(!Debug.debug.dontReallyReproduceMessages)
                 telega.sendMessage(victim.id, msg.getText());
+            victim.forceStartNewDialog=false;
             victim.tailOutgoingCount++;
             msg.setReproducedCount(msg.getReproducedCount()+1);
             msg.reproducedTo.add(victim.id);
@@ -405,6 +430,9 @@ public class Router {
     private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
         if(isMe(victim))
             return false;
+        if(victim.forceStartNewDialog)
+            return true;
+
         if(!isUserRegularNotScam(victim))
             return false;
         if(!isRecentLastSeen(victim))

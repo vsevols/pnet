@@ -832,6 +832,22 @@ public class Telega {
         }
     }
 
+    public void close() {
+        client.send(new TdApi.Close());
+    }
+
+    public TdApi.Chat joinChatByInviteLink(String link) throws Exception {
+        try {
+            return client.syncRequest
+                    (new TdApi.JoinChatByInviteLink(link), new TdApi.Chat());
+        } catch (TdApiException e) {
+            //!USER_ALREADY_PARTICIPANT
+            if(e.getCode()!=400)
+                throw new Exception(e);
+            return null;
+        }
+    }
+
     private class AuthorizationRequestHandler implements ReceiveHandler {
         @Override
         public boolean onResult(TdApi.Object object) {

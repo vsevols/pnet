@@ -10,8 +10,9 @@ import lombok.*;
 public class Victim {
     public final int id;
     public final String groupName;
-    public boolean isRegularNotScam;
     public final String phone;
+    public boolean isRegularNotScam;
+    public boolean forceStartNewDialog;
     public int tailOutgoingCount;
     public boolean isSendingFailedFlood;
 

@@ -30,8 +30,10 @@ public class TelegaClient extends Client {
             if(null==response)
                 continue;
               //  throw new TimeoutException(function.toString());
-            if (!resultHandler.onResult(response.getObject()))
+            if (!resultHandler.onResult(response.getObject())) {
                 this.defaultReceiveHandler.onResult(response.getObject());
+                return;
+            }
             else return;
         }while(true);
     }
