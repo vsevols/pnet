@@ -43,4 +43,8 @@ public class ConfigService {
         }
     }
 
+    public static boolean isDebuggerPresent() {
+        return java.lang.management.ManagementFactory.getRuntimeMXBean().
+                getInputArguments().toString().contains("jdwp");
+    }
 }

@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.pnet.util.PNSystem.promptString;
+
 public class Router {
 
 
@@ -386,6 +388,11 @@ public class Router {
 
     private void load() throws IOException {
         config= ConfigService.loadConfig();
+        if(ConfigService.isDebuggerPresent()){
+            config.shuoldBackupIncomingMessages="Y".equals(promptString(
+                    String.format("Are incoming messages should be backuped to %s? (Y/N)\n"+
+                            " Make sure another instance NOT running!", Config.toDataPath(""))));
+        }
     }
 
     private void save() {
