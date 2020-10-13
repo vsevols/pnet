@@ -470,6 +470,9 @@ public class Router {
     private boolean isVictimSuitable(Victim victim, RoutingMessage msg) throws Exception {
         if(isMe(victim))
             return false;
+        if(isMsgToVictimReproduced(msg, victim))
+            return false;
+
         if(victim.forceStartNewDialog&&!dialogNotEmpty(victim))
             return true;
 
@@ -483,6 +486,15 @@ public class Router {
             return false;
 
         return true;
+    }
+
+    private boolean isMsgToVictimReproduced(RoutingMessage msg, Victim victim) {
+        for (Integer userId : msg.reproducedTo) {
+            if(userId==victim.getId())
+                return true;
+        }
+
+        return false;
     }
 
     private boolean dialogNotEmpty(Victim victim) {
