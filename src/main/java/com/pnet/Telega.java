@@ -37,6 +37,7 @@ public class Telega {
     public OnMessageHandler onMessage;
     private static TelegaClient client;
     private static boolean haveAuthorization;
+    public boolean shouldBackupIncomingMessages;
     private TdApi.AuthorizationState authorizationState = null;
     private static final Lock authorizationLock = new ReentrantLock();
     private static final Condition gotAuthorization = authorizationLock.newCondition();
@@ -84,7 +85,8 @@ public class Telega {
 
         incomingMessagesBackup=new BackupStorageList<>(
                 Config.toDataPath("telegaIncomingMessagesBackup.json"), true);
-        incomingMessagesBackup.load();
+        if(shouldBackupIncomingMessages)
+            incomingMessagesBackup.load();
 
         while (!haveAuthorization) {
             client.tryProcessUpdates(1000);
@@ -418,11 +420,11 @@ public class Telega {
     /**TODO: Вынести в onMessage, сделать обработчик обязательным, в т.ч. для тестов
      */
     private void incomingMessageProcess(TdApi.Message msg, boolean addToBackup) {
-        if(addToBackup)
+        if(addToBackup&&shouldBackupIncomingMessages)
             incomingMessagesBackup.add(msg);
 
         if(null!=onMessage)
-            if(onMessage.onMessage(new MessageImpl(msg)))
+            if(onMessage.onMessage(new MessageImpl(msg))&&shouldBackupIncomingMessages)
                 incomingMessagesBackup.remove(msg);
     }
 
@@ -568,7 +570,8 @@ public class Telega {
     }
 
     private void incomingMessagesBackupProcess() {
-        if(Debug.debug.dontInjectBackupedMessages||Debug.debug.dontReallyReproduceMessages)
+        if(Debug.debug.dontInjectBackupedMessages||Debug.debug.dontReallyReproduceMessages
+                ||!shouldBackupIncomingMessages)
             return;
 
         while (true) {

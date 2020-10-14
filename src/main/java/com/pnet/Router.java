@@ -39,6 +39,7 @@ public class Router {
     public void Init() throws Exception {
         load();
         telega = new Telega();
+        telega.shouldBackupIncomingMessages=config.shuoldBackupIncomingMessages;
         telega.init();
         telega.onMessage = new OnMessageHandler() {
             @Override
@@ -389,9 +390,8 @@ public class Router {
     private void load() throws IOException {
         config= ConfigService.loadConfig();
         if(ConfigService.isDebuggerPresent()){
-            config.shuoldBackupIncomingMessages="Y".equals(promptString(
-                    String.format("Are incoming messages should be backuped to %s? (Y/N)\n"+
-                            " Make sure another instance NOT running!", Config.toDataPath(""))));
+            config.shuoldBackupIncomingMessages=!Debug.debug.isTesting
+                    ||!new File(Config.toDataPath("dontProcessMessagesBackupWhenIsTesting")).isFile();
         }
     }
 
