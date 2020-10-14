@@ -147,7 +147,7 @@ public class Router {
 
     private void processIncomingMessages() {
         while(config.incomingMessages.size()>0&&!isStopped()){ //TODO: проверка isStopped()
-            processMessage(config.incomingMessages.get(0));
+            processMessage(config.incomingMessages.get(0), false);
         }
     }
 
@@ -156,7 +156,7 @@ public class Router {
             return;
         try {
             processMessage(new RoutingMessage(
-                    new MessageImpl("Хеллов"), true));
+                    new MessageImpl("Здрасьте"), true), false);
         }finally {
             config.lastGreetingMessageMoment=LocalDateTime.now();
             save();
@@ -200,14 +200,15 @@ public class Router {
         return Logger.getGlobal();
     }
 
-    private void processMessage(RoutingMessage msg) {
+    private void processMessage(RoutingMessage msg, boolean isRecursive) {
         //?Не имеет смысла, т.к. на поступившее сообщение отвечаем в любом случае
         //UPD: не в любом, -по стандартному алгоритму, чтобы не тратить живые сообщения
         //TODO: инициализировать дату кеш-элемента датой сообщения, протестировать
         //setUserLastSeen(msg.getSenderUserId(), msg.getLocalDateTime());
 
         try{
-            logInfo(String.format("msgId %d processing started", msg.getId()));
+            if(!isRecursive)
+                logInfo(String.format("msgId %d processing started", msg.getId()));
 
             Victim victim = config.victims.getOrDefault(msg.getSenderUserId(), null);
             //TODO: (?) Добавлять новые входящие контакты !кроме контакта "Telegram"
@@ -233,7 +234,7 @@ public class Router {
                 }
                 save();
 
-                if (userRegularNotScam) {
+                if (userRegularNotScam&&!isRecursive) {
                     try {
                         publication.publish(msg, config.victims);
                     } catch (Exception e) {
@@ -256,12 +257,16 @@ public class Router {
                 if (isStopped())
                     return;
             }
-        }finally{
-            logInfo(String.format("msgId %d processing finished", msg.getId()));
-        }
 
-        if(!Debug.debug.dontAddVictims&&addMoreVictims())
-            processMessage(msg);
+            if(!Debug.debug.dontAddVictims&&addMoreVictims())
+                processMessage(msg, true);
+
+        }finally{
+            if(!isRecursive) {
+                incomingMessageArchivate(msg);
+                logInfo(String.format("msgId %d processing finished", msg.getId()));
+            }
+        }
     }
 
     private String victimPrintInfo(Victim victim) {
