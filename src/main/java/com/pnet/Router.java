@@ -6,6 +6,7 @@ import com.pnet.routing.MessageImpl;
 import com.pnet.routing.RoutingMessage;
 import com.pnet.secure.Config;
 import com.pnet.telega.TdApiException;
+import com.pnet.util.CountDown;
 import it.tdlight.tdlib.TdApi;
 
 import java.io.*;
@@ -29,7 +30,7 @@ public class Router {
     };
     private static final int MAX_MY_MONOLOG_MESSAGES = 5;
     private static final int MAX_MESSAGES_ARCHIVE_SIZE = 500;
-    public static final int USER_CACHE_EXPIRED_MINUTES = 10;
+    public static final int USER_CACHE_EXPIRED_MINUTES = 30;
     public static final int MAX_MINUTES_RECENT_SEEN = USER_CACHE_EXPIRED_MINUTES*2;
     private Telega telega;
     private Config config;
@@ -247,12 +248,16 @@ public class Router {
                 return;
             }
 
+            CountDown countDown = new CountDown(60000);
             for (int i = 0; i < config.victims.size(); i++) {
                 victim = config.victims.get(i);
                 if (victimProcess(victim, msg)) {
                     incomingMessageArchivate(msg);
                     return;
                 }
+
+                if(msg.getReproducedCount()>0&&countDown.isExpired())
+                    return;
 
                 if (isStopped())
                     return;
@@ -264,6 +269,7 @@ public class Router {
         }finally{
             if(!isRecursive) {
                 incomingMessageArchivate(msg);
+                publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
                 logInfo(String.format("msgId %d processing finished", msg.getId()));
             }
         }
@@ -442,7 +448,6 @@ public class Router {
         }
 
         if(msg.getReproducedCount() >= getMaxReproduceCount(msg.isGreeting())){
-            publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
             return true;
         }
         return false;
