@@ -518,7 +518,8 @@ public class Router {
     }
 
     private boolean canStartNewDialogTimeoutReached() {
-        return config.lastGreetingMessageMoment.isBefore(LocalDateTime.now().minusMinutes(180));
+        return config.lastGreetingMessageMoment.isBefore(LocalDateTime.now().minusMinutes(
+                config.greetingMessageGenerateIntervalMinutes));
     }
 
     private boolean isUserRegularNotScam(Victim victim) throws Exception {
