@@ -248,7 +248,7 @@ public class Router {
                 return;
             }
 
-            CountDown countDown = new CountDown(60000);
+            CountDown countDown = new CountDown(60000*3);
             for (int i = 0; i < config.victims.size(); i++) {
                 victim = config.victims.get(i);
                 if (victimProcess(victim, msg)) {
