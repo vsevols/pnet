@@ -21,7 +21,7 @@ public class PublicationService {
                 msg.getId(), msg.getText());
     }
 
-    public void publishReproduced(RoutingMessage msg, VictimList victims, int incomingQueueSize) {
+    public void publishReproduced(RoutingMessage msg, VictimList victims, int incomingQueueSize, int victimCheckedCnt) {
         ArrayList<Integer> reproducedTo = msg.reproducedTo;
         String labels=null;
         for (Integer userId :
@@ -34,8 +34,8 @@ public class PublicationService {
 
         try {
             telega.sendMessage(observersChatId,
-                    String.format("msgId: %d -> %s\nincomingQueueSize: %d",
-                            msg.getId(), labels, incomingQueueSize));
+                    String.format("msgId: %d -> %s\nincomingQueueSize: %d victimeCheckedCnt: %d",
+                            msg.getId(), labels, incomingQueueSize, victimCheckedCnt));
         } catch (Exception e) {
             e.printStackTrace();
         }

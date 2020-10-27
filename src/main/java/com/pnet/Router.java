@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static com.pnet.util.PNSystem.promptString;
-
 public class Router {
 
 
@@ -207,6 +205,7 @@ public class Router {
         //TODO: инициализировать дату кеш-элемента датой сообщения, протестировать
         //setUserLastSeen(msg.getSenderUserId(), msg.getLocalDateTime());
 
+        int victimCheckedCnt=0;
         try{
             if(!isRecursive)
                 logInfo(String.format("msgId %d processing started", msg.getId()));
@@ -250,6 +249,7 @@ public class Router {
 
             CountDown countDown = new CountDown(60000*3);
             for (int i = 0; i < config.victims.size(); i++) {
+                victimCheckedCnt=i;
                 victim = config.victims.get(i);
                 if (victimProcess(victim, msg)) {
                     incomingMessageArchivate(msg);
@@ -269,7 +269,7 @@ public class Router {
         }finally{
             if(!isRecursive) {
                 incomingMessageArchivate(msg);
-                publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
+                publication.publishReproduced(msg, config.victims, config.incomingMessages.size(), victimCheckedCnt);
                 logInfo(String.format("msgId %d processing finished", msg.getId()));
             }
         }
@@ -418,7 +418,6 @@ public class Router {
             return false;
 
         if(0 == getMaxReproduceCount(msg.isGreeting())){
-            publication.publishReproduced(msg, config.victims, config.incomingMessages.size());
             return true;
         }
 
