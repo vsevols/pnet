@@ -34,7 +34,7 @@ public class PublicationService {
 
         try {
             telega.sendMessage(observersChatId,
-                    String.format("msgId: %d -> %s\nincomingQueueSize: %d victimeCheckedCnt: %d",
+                    String.format("msgId: %d -> %s\nincomingQueueSize: %d victimCheckedCnt: %d",
                             msg.getId(), labels, incomingQueueSize, victimCheckedCnt));
         } catch (Exception e) {
             e.printStackTrace();
