@@ -256,7 +256,7 @@ public class Router {
                     return;
                 }
 
-                if(msg.getReproducedCount()>0&&countDown.isExpired())
+                if(msg.getReproducedCount()>0&&countDown.isExpired()&&!msg.isGreeting())
                     return;
 
                 if (isStopped())
